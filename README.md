@@ -8,7 +8,7 @@
 [ 🌿 Acesse o site ](#)
 
 ## Sobre o Projeto 🌿
-O AgroFloresta na Escola é um projeto de extensão universitária da UnB (Universidade de Brasília) em parceria com o CEL (Centro de Extensão e Vivência) que leva o conhecimento agroflorestal para o ambiente escolar. Unindo a sabedoria ancestral do Cerrado com práticas científicas, promovemos a regeneração ambiental e a segurança alimentar. O projeto é cultivado de forma colaborativa por professores, estudantes e pela comunidade, fortalecendo o vínculo com a natureza e os saberes locais.
+A AgroFloresta na Escola é um projeto de extensão universitária da UnB (Universidade de Brasília) em parceria com o CEL (Centro educacional do lago) que leva o conhecimento agroflorestal para o ambiente escolar. Unindo a sabedoria ancestral do Cerrado com práticas científicas, promovemos a regeneração ambiental e a segurança alimentar. O projeto é cultivado de forma colaborativa por professores, estudantes e pela comunidade, fortalecendo o vínculo com a natureza e os saberes locais.
 
 | Tema | Descrição |
 | :--- | :--- |
