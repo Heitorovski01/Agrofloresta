@@ -162,8 +162,30 @@ export class Game {
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw food
-    this.ctx.fillStyle = '#f5c842'; // var(--yellow) from main.css for now
+    // Draw Background Grid (Solo da Roça)
+    const colorA = '#8B5A2B'; // Darker soil
+    const colorB = '#9C6631'; // Lighter soil
+    for (let row = 0; row < this.gridSize; row++) {
+      for (let col = 0; col < this.gridSize; col++) {
+        this.ctx.fillStyle = (row + col) % 2 === 0 ? colorA : colorB;
+        this.ctx.fillRect(col * this.tileSize, row * this.tileSize, this.tileSize, this.tileSize);
+      }
+    }
+
+    // Draw food based on type
+    switch (this.food.type) {
+      case 'pequi':
+        this.ctx.fillStyle = '#FFC107'; // Yellow/Orange
+        break;
+      case 'buriti':
+        this.ctx.fillStyle = '#8B0000'; // Dark Red
+        break;
+      case 'jatoba':
+        this.ctx.fillStyle = '#654321'; // Brown
+        break;
+      default:
+        this.ctx.fillStyle = '#f5c842'; // fallback yellow
+    }
     this.ctx.fillRect(
       this.food.position.x * this.tileSize,
       this.food.position.y * this.tileSize,
@@ -171,10 +193,16 @@ export class Game {
       this.tileSize
     );
 
-    // Draw snake body
-    this.ctx.fillStyle = '#4caf50'; // var(--green-light)
-    
-    for (const segment of this.snake.body) {
+    // Draw snake body (Minhoca - Rosa terroso)
+    this.ctx.fillStyle = '#d47b7b'; 
+    for (let i = 0; i < this.snake.body.length; i++) {
+      const segment = this.snake.body[i];
+      // Make head slightly different (darker pink)
+      if (i === 0) {
+        this.ctx.fillStyle = '#b35959';
+      } else {
+        this.ctx.fillStyle = '#d47b7b';
+      }
       this.ctx.fillRect(
         segment.x * this.tileSize, 
         segment.y * this.tileSize, 

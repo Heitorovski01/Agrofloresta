@@ -141,6 +141,10 @@ describe('Game Loop and Rendering', () => {
     expect(game.isGameOver).toBe(true);
     expect(localStorageMock.setItem).toHaveBeenCalledWith('agrofloresta_snake_highscore', '10');
     expect(game.highScore).toBe(10);
+
+    // Assert that the proper strings are drawn on game over
+    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('Tente de novo', 200, 215);
   });
 
   it('should reset state on restart', () => {
