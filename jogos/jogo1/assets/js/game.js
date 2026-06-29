@@ -7,7 +7,20 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.gridSize = 20;
-    this.tileSize = canvas.width / this.gridSize;
+    this.CELL_SIZE = 32;
+    this.tileSize = this.CELL_SIZE;
+    
+    // High DPI Canvas Scaling
+    const dpr = window.devicePixelRatio || 1;
+    this.canvas.style.width = `${this.gridSize * this.CELL_SIZE}px`;
+    this.canvas.style.height = `${this.gridSize * this.CELL_SIZE}px`;
+    this.canvas.width = this.gridSize * this.CELL_SIZE * dpr;
+    this.canvas.height = this.gridSize * this.CELL_SIZE * dpr;
+    this.ctx.scale(dpr, dpr);
+    
+    this.logicalWidth = this.gridSize * this.tileSize;
+    this.logicalHeight = this.gridSize * this.tileSize;
+
     this.snake = new Snake(10, 10);
     this.food = new Food(this.gridSize);
     this.isRunning = false;
@@ -192,22 +205,22 @@ export class Game {
   drawGameOver() {
     if (!this.ctx) return; // for tests
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
     this.ctx.fillStyle = 'white';
     this.ctx.font = '24px "Pixelify Sans", cursive';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('A terra precisa de você!', this.canvas.width / 2, this.canvas.height / 2 - 15);
-    this.ctx.fillText('Tente de novo', this.canvas.width / 2, this.canvas.height / 2 + 15);
+    this.ctx.fillText('A terra precisa de você!', this.logicalWidth / 2, this.logicalHeight / 2 - 15);
+    this.ctx.fillText('Tente de novo', this.logicalWidth / 2, this.logicalHeight / 2 + 15);
   }
 
   drawStartScreen() {
     if (!this.ctx) return;
     this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
     this.ctx.fillStyle = 'white';
     this.ctx.font = '24px "Pixelify Sans", cursive';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText('Pressione Iniciar', this.logicalWidth / 2, this.logicalHeight / 2);
   }
 
   draw() {
@@ -219,7 +232,7 @@ export class Game {
     if (this.isGameOver) return; // Wait to keep game over screen intact
 
     // Clear canvas
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.clearRect(0, 0, this.logicalWidth, this.logicalHeight);
 
     // Draw Background Grid (Solo da Roça)
     const colorA = '#8B5A2B'; // Darker soil
@@ -234,66 +247,115 @@ export class Game {
     // Draw food based on type
     const cx = this.food.position.x * this.tileSize + this.tileSize / 2;
     const cy = this.food.position.y * this.tileSize + this.tileSize / 2;
+    const radius = this.tileSize / 2 - 2;
+    
+    // Fallback drawImage placeholder structure:
+    // const img = new Image(); img.src = 'path.png'; this.ctx.drawImage(img, cx - radius, cy - radius, this.tileSize, this.tileSize);
     
     switch (this.food.type) {
       case 'pequi':
+        const gradPequi = this.ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
+        gradPequi.addColorStop(0, '#FFF59D');
+        gradPequi.addColorStop(0.5, '#FFC107');
+        gradPequi.addColorStop(1, '#FF8C00');
+        
         this.ctx.beginPath();
-        this.ctx.arc(cx, cy, this.tileSize / 2 - 2, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#FFC107'; // Yellow
+        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        this.ctx.fillStyle = gradPequi;
         this.ctx.fill();
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeStyle = '#FF8C00'; // Orange contour
-        this.ctx.stroke();
         break;
+
       case 'buriti':
         this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, this.tileSize / 2 - 2, this.tileSize / 3, 0, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#8B0000'; // Dark Red
+        this.ctx.ellipse(cx, cy, radius * 0.9, radius * 1.1, 0, 0, Math.PI * 2); 
+        
+        const gradBuriti = this.ctx.createRadialGradient(cx, cy, radius*0.2, cx, cy, radius*1.2);
+        gradBuriti.addColorStop(0, '#B22222');
+        gradBuriti.addColorStop(1, '#5C1515');
+
+        this.ctx.fillStyle = gradBuriti;
         this.ctx.fill();
-        break;
-      case 'jatoba':
+        
+        this.ctx.strokeStyle = '#3A0D0D';
+        this.ctx.lineWidth = 1.5;
         this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, this.tileSize / 2 - 1, this.tileSize / 4, 0, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#CD853F'; // Peru/Brown light
-        this.ctx.fill();
-        this.ctx.lineWidth = 2;
-        this.ctx.strokeStyle = '#654321'; // Dark brown contour
+        this.ctx.moveTo(cx - radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx + radius*0.5, cy + radius*0.6);
+        this.ctx.moveTo(cx + radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx - radius*0.5, cy + radius*0.6);
         this.ctx.stroke();
         break;
+
+      case 'jatoba':
+      case 'baru':
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx - radius, cy);
+        this.ctx.bezierCurveTo(cx - radius, cy - radius*1.2, cx + radius, cy - radius*1.2, cx + radius, cy);
+        this.ctx.bezierCurveTo(cx + radius, cy + radius*0.5, cx - radius, cy + radius*0.5, cx - radius, cy);
+        
+        this.ctx.fillStyle = '#654321';
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy - radius*0.3, radius*0.5, radius*0.15, 0, 0, Math.PI * 2);
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+        this.ctx.fill();
+        break;
+
       default:
-        this.ctx.fillStyle = '#f5c842'; // fallback yellow
-        this.ctx.fillRect(
-          this.food.position.x * this.tileSize,
-          this.food.position.y * this.tileSize,
-          this.tileSize,
-          this.tileSize
-        );
+        this.ctx.fillStyle = '#f5c842';
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        this.ctx.fill();
     }
 
-    // Draw snake body (Minhoca - Rosa terroso)
-    for (let i = 0; i < this.snake.body.length; i++) {
-      const segment = this.snake.body[i];
-      const px = segment.x * this.tileSize;
-      const py = segment.y * this.tileSize;
+    // Draw snake body (Cylindrical Path)
+    if (this.snake.body.length > 0) {
+      const offset = this.tileSize / 2;
       
-      // Base square
-      this.ctx.fillStyle = i === 0 ? '#b35959' : '#d47b7b';
-      this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = '#d47b7b';
+      this.ctx.lineWidth = this.tileSize * 0.8;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
       
-      // Volume/Shadow at the bottom
-      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
-      this.ctx.fillRect(px, py + this.tileSize - 4, this.tileSize, 4);
+      // Shadow for organic feel
+      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+      this.ctx.shadowBlur = 4;
+      this.ctx.shadowOffsetX = 2;
+      this.ctx.shadowOffsetY = 2;
       
-      // Eyes for the head
-      if (i === 0) {
-        this.ctx.fillStyle = 'black';
-        // Simplified eyes assuming always looking one direction for now, or just default drawn
-        // More complex would use snake direction
-        this.ctx.beginPath();
-        this.ctx.arc(px + 6, py + 6, 2, 0, Math.PI * 2);
-        this.ctx.arc(px + this.tileSize - 6, py + 6, 2, 0, Math.PI * 2);
-        this.ctx.fill();
+      this.ctx.moveTo(
+        this.snake.body[0].x * this.tileSize + offset,
+        this.snake.body[0].y * this.tileSize + offset
+      );
+      
+      for (let i = 1; i < this.snake.body.length; i++) {
+        this.ctx.lineTo(
+          this.snake.body[i].x * this.tileSize + offset,
+          this.snake.body[i].y * this.tileSize + offset
+        );
       }
+      this.ctx.stroke();
+
+      // Reset shadow for the head details
+      this.ctx.shadowColor = 'transparent';
+      this.ctx.shadowBlur = 0;
+      this.ctx.shadowOffsetX = 0;
+      this.ctx.shadowOffsetY = 0;
+
+      // Head details
+      const headX = this.snake.body[0].x * this.tileSize + offset;
+      const headY = this.snake.body[0].y * this.tileSize + offset;
+      
+      this.ctx.fillStyle = '#b35959'; 
+      this.ctx.beginPath();
+      this.ctx.arc(headX, headY, this.tileSize * 0.35, 0, Math.PI * 2);
+      this.ctx.fill();
+      
+      this.ctx.fillStyle = 'black';
+      this.ctx.beginPath();
+      this.ctx.arc(headX - this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
+      this.ctx.arc(headX + this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
+      this.ctx.fill();
     }
   }
 

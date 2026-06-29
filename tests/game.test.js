@@ -21,17 +21,29 @@ describe('Game Loop and Rendering', () => {
       ellipse: vi.fn(),
       fill: vi.fn(),
       stroke: vi.fn(),
+      scale: vi.fn(),
+      moveTo: vi.fn(),
+      lineTo: vi.fn(),
+      bezierCurveTo: vi.fn(),
+      createRadialGradient: vi.fn(() => ({ addColorStop: vi.fn() })),
       fillStyle: '',
       font: '',
       textAlign: '',
       lineWidth: 1,
-      strokeStyle: ''
+      strokeStyle: '',
+      lineCap: '',
+      lineJoin: '',
+      shadowColor: '',
+      shadowBlur: 0,
+      shadowOffsetX: 0,
+      shadowOffsetY: 0
     };
 
     const mockCanvas = {
       getContext: vi.fn(() => mockCtx),
       width: 400,
-      height: 400
+      height: 400,
+      style: {}
     };
 
     // We pass the mock canvas directly for testing
@@ -40,10 +52,10 @@ describe('Game Loop and Rendering', () => {
 
   it('should initialize with correct properties and draw start screen', () => {
     expect(game.gridSize).toBe(20);
-    expect(game.tileSize).toBe(20); // 400 / 20 = 20
+    expect(game.tileSize).toBe(32);
     expect(game.snake).toBeDefined();
     expect(game.isRunning).toBe(false);
-    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 200);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 320, 320);
   });
 
   it('should start and stop the loop', () => {
@@ -62,10 +74,10 @@ describe('Game Loop and Rendering', () => {
     // Draw without start screen interference
     game.isRunning = true;
     game.draw();
-    // It should clear the canvas
-    expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 400, 400);
-    // It should draw the snake (1 part by default at 10,10)
-    expect(mockCtx.fillRect).toHaveBeenCalledWith(10 * 20, 10 * 20, 20, 20);
+    // It should clear the canvas logical bounds (20 * 32 = 640)
+    expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 640, 640);
+    // It should call stroke to draw the snake path
+    expect(mockCtx.stroke).toHaveBeenCalled();
   });
 
   it('should handle keyboard input', () => {
@@ -172,13 +184,14 @@ describe('Game Loop and Rendering', () => {
     // Assert that overlay was shown instead of canvas drawing
     expect(mockOverlay.classList.remove).toHaveBeenCalledWith('hidden');
     // The canvas game over text should not be drawn yet
-    expect(mockCtx.fillText).not.toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
+    expect(mockCtx.fillText).not.toHaveBeenCalledWith('A terra precisa de você!', 320, 305);
 
     // Simulate saving the score
     game.handleSaveScore();
     expect(localStorageMock.setItem).toHaveBeenCalledWith('agro_leaderboard', expect.any(String));
     expect(mockOverlay.classList.add).toHaveBeenCalledWith('hidden');
-    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
+    // logical width / 2 = 320, height / 2 - 15 = 305
+    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 320, 305);
   });
 
   it('should skip overlay and draw game over if not Top 3', () => {
@@ -203,7 +216,7 @@ describe('Game Loop and Rendering', () => {
     game.triggerGameOver();
     
     // Overlay logic skipped, canvas drawn immediately
-    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 320, 305);
   });
 
   it('should reset state on restart', () => {
