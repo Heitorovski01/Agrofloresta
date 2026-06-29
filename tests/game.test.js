@@ -10,7 +10,10 @@ describe('Game Loop and Rendering', () => {
     mockCtx = {
       clearRect: vi.fn(),
       fillRect: vi.fn(),
-      fillStyle: ''
+      fillText: vi.fn(),
+      fillStyle: '',
+      font: '',
+      textAlign: ''
     };
 
     const mockCanvas = {
@@ -62,5 +65,54 @@ describe('Game Loop and Rendering', () => {
 
     game.handleInput({ key: 'w' });
     expect(game.snake.nextDirection).toEqual({ x: 0, y: -1 });
+  });
+
+  it('should handle wall collision (Game Over)', () => {
+    game.snake.body[0] = { x: -1, y: 10 }; // Outside left bounds
+    game.update();
+    expect(game.isGameOver).toBe(true);
+
+    game.isGameOver = false;
+    game.snake.body[0] = { x: 20, y: 10 }; // Outside right bounds
+    game.update();
+    expect(game.isGameOver).toBe(true);
+
+    game.isGameOver = false;
+    game.snake.body[0] = { x: 10, y: -1 }; // Outside top bounds
+    game.update();
+    expect(game.isGameOver).toBe(true);
+
+    game.isGameOver = false;
+    game.snake.body[0] = { x: 10, y: 20 }; // Outside bottom bounds
+    game.update();
+    expect(game.isGameOver).toBe(true);
+  });
+
+  it('should handle body collision (Game Over)', () => {
+    // Make snake head intersect with body
+    game.snake.body = [
+      { x: 10, y: 10 },
+      { x: 11, y: 10 },
+      { x: 11, y: 11 },
+      { x: 10, y: 11 },
+      { x: 10, y: 10 } // Tail is on same spot as head
+    ];
+    game.update();
+    expect(game.isGameOver).toBe(true);
+  });
+
+  it('should eat food, increase score, and grow', () => {
+    // Place food right where snake head is moving
+    game.food.position = { x: 11, y: 10 };
+    game.snake.body[0] = { x: 10, y: 10 };
+    game.snake.changeDirection({ x: 1, y: 0 }); // Moving right
+    
+    // Call update, snake will move to 11,10 and eat the food
+    game.update();
+    
+    expect(game.score).toBe(1);
+    expect(game.snake.growing).toBe(true);
+    // Food position should change
+    expect(game.food.position).not.toEqual({ x: 11, y: 10 });
   });
 });

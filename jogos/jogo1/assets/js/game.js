@@ -1,4 +1,5 @@
 import { Snake } from './snake.js';
+import { Food } from './food.js';
 
 export class Game {
   constructor(canvas) {
@@ -7,7 +8,10 @@ export class Game {
     this.gridSize = 20;
     this.tileSize = canvas.width / this.gridSize;
     this.snake = new Snake(10, 10);
+    this.food = new Food(this.gridSize);
     this.isRunning = false;
+    this.isGameOver = false;
+    this.score = 0;
     this.intervalId = null;
     this.tickRate = 150; // ms
 
@@ -46,15 +50,74 @@ export class Game {
   }
 
   update() {
+    if (this.isGameOver) return;
+
     this.snake.update();
+
+    const head = this.snake.body[0];
+
+    // Wall collision
+    if (head.x < 0 || head.x >= this.gridSize || head.y < 0 || head.y >= this.gridSize) {
+      this.isGameOver = true;
+      this.stop();
+      this.drawGameOver();
+      return;
+    }
+
+    // Body collision
+    for (let i = 1; i < this.snake.body.length; i++) {
+      if (head.x === this.snake.body[i].x && head.y === this.snake.body[i].y) {
+        this.isGameOver = true;
+        this.stop();
+        this.drawGameOver();
+        return;
+      }
+    }
+
+    // Eating food
+    if (head.x === this.food.position.x && head.y === this.food.position.y) {
+      this.score += 1;
+      this.snake.grow();
+      this.food.spawn(this.snake.body);
+      this.updateScoreDisplay();
+    }
+  }
+
+  updateScoreDisplay() {
+    const scoreElement = document.getElementById('scoreDisplay');
+    if (scoreElement) {
+      scoreElement.innerText = `Sementes colhidas: ${this.score}`;
+    }
+  }
+
+  drawGameOver() {
+    if (!this.ctx) return; // for tests
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = '24px "Pixelify Sans", cursive';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('A terra precisa de você!', this.canvas.width / 2, this.canvas.height / 2 - 15);
+    this.ctx.fillText('Tente de novo', this.canvas.width / 2, this.canvas.height / 2 + 15);
   }
 
   draw() {
+    if (this.isGameOver) return; // Wait to keep game over screen intact
+
     // Clear canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    // Draw snake body (Agroforestry theme - colors will be styled later via ctx or CSS, for now basic green)
-    this.ctx.fillStyle = '#4caf50'; // var(--green-light) from main.css
+    // Draw food
+    this.ctx.fillStyle = '#f5c842'; // var(--yellow) from main.css for now
+    this.ctx.fillRect(
+      this.food.position.x * this.tileSize,
+      this.food.position.y * this.tileSize,
+      this.tileSize,
+      this.tileSize
+    );
+
+    // Draw snake body
+    this.ctx.fillStyle = '#4caf50'; // var(--green-light)
     
     for (const segment of this.snake.body) {
       this.ctx.fillRect(

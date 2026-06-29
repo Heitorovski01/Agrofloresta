@@ -36,4 +36,14 @@ describe('Snake Logic', () => {
     expect(snake.body[0]).toEqual({ x: 12, y: 10 });
     expect(snake.body[1]).toEqual({ x: 11, y: 10 });
   });
+
+  it('should grow when grow() is called', () => {
+    snake.changeDirection({ x: 1, y: 0 });
+    snake.grow();
+    snake.update(); // Moves head to 11,10. Body should have length 2 (11,10 and 10,10)
+    
+    expect(snake.body.length).toBe(2);
+    expect(snake.body[0]).toEqual({ x: 11, y: 10 });
+    expect(snake.body[1]).toEqual({ x: 10, y: 10 });
+  });
 });

@@ -3,6 +3,7 @@ export class Snake {
     this.body = [{ x: initialX, y: initialY }];
     this.direction = { x: 0, y: 0 };
     this.nextDirection = { x: 0, y: 0 }; // prevent multiple turns in one tick
+    this.growing = false;
   }
 
   changeDirection(newDir) {
@@ -11,6 +12,10 @@ export class Snake {
     if (this.direction.y !== 0 && this.direction.y === -newDir.y) return;
     
     this.nextDirection = { ...newDir };
+  }
+
+  grow() {
+    this.growing = true;
   }
 
   update() {
@@ -23,10 +28,15 @@ export class Snake {
       y: head.y + this.direction.y
     };
 
-    // If moving, add new head and remove tail (unless growing, which is Phase 2)
+    // If moving, add new head and remove tail (unless growing)
     if (this.direction.x !== 0 || this.direction.y !== 0) {
       this.body.unshift(newHead);
-      this.body.pop();
+      
+      if (this.growing) {
+        this.growing = false; // reset growing state
+      } else {
+        this.body.pop(); // remove tail if not growing
+      }
     }
   }
 }
