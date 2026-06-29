@@ -1,0 +1,25 @@
+{
+  "name": "agrofloresta",
+  "version": "1.0.0",
+  "description": "*Vivências para o Amanhã*",
+  "main": "index.js",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Heitorovski01/Agrofloresta.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Heitorovski01/Agrofloresta/issues"
+  },
+  "homepage": "https://github.com/Heitorovski01/Agrofloresta#readme",
+  "devDependencies": {
+    "jsdom": "^29.1.1",
+    "vitest": "^4.1.9"
+  }
+}
