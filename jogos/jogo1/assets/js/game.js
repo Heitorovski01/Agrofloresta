@@ -1,5 +1,6 @@
 import { Snake } from './snake.js';
 import { Food } from './food.js';
+import { saveScore, getLeaderboard } from './score.js';
 
 export class Game {
   constructor(canvas) {
@@ -109,7 +110,18 @@ export class Game {
     this.isGameOver = true;
     this.stop();
     
-    // Check and save High Score
+    // Check and save High Score (Leaderboard logic)
+    const leaderboard = getLeaderboard();
+    const isTop5 = leaderboard.length < 5 || this.score > leaderboard[leaderboard.length - 1].score;
+    
+    if (isTop5 && this.score > 0) {
+      let playerName = prompt("Parabéns! Você entrou no Top 5! Insira 3 letras para o seu nome:");
+      if (playerName) {
+        playerName = playerName.substring(0, 3).toUpperCase();
+        saveScore(playerName, this.score);
+      }
+    }
+
     if (this.score > this.highScore) {
       this.highScore = this.score;
       try {
@@ -148,7 +160,22 @@ export class Game {
     this.ctx.fillStyle = 'white';
     this.ctx.font = '24px "Pixelify Sans", cursive';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2);
+    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2 - 80);
+    
+    // Leaderboard Display
+    const leaderboard = getLeaderboard();
+    this.ctx.font = '20px "Pixelify Sans", cursive';
+    this.ctx.fillText('--- TOP 5 ---', this.canvas.width / 2, this.canvas.height / 2 - 30);
+    
+    if (leaderboard.length === 0) {
+      this.ctx.font = '16px "Pixelify Sans", cursive';
+      this.ctx.fillText('Nenhum recorde ainda', this.canvas.width / 2, this.canvas.height / 2);
+    } else {
+      this.ctx.font = '16px "Pixelify Sans", cursive';
+      leaderboard.forEach((entry, index) => {
+        this.ctx.fillText(`${index + 1}. ${entry.name} - ${entry.score}`, this.canvas.width / 2, this.canvas.height / 2 + (index * 20));
+      });
+    }
   }
 
   draw() {
@@ -173,42 +200,68 @@ export class Game {
     }
 
     // Draw food based on type
+    const cx = this.food.position.x * this.tileSize + this.tileSize / 2;
+    const cy = this.food.position.y * this.tileSize + this.tileSize / 2;
+    
     switch (this.food.type) {
       case 'pequi':
-        this.ctx.fillStyle = '#FFC107'; // Yellow/Orange
+        this.ctx.beginPath();
+        this.ctx.arc(cx, cy, this.tileSize / 2 - 2, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#FFC107'; // Yellow
+        this.ctx.fill();
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = '#FF8C00'; // Orange contour
+        this.ctx.stroke();
         break;
       case 'buriti':
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy, this.tileSize / 2 - 2, this.tileSize / 3, 0, 0, Math.PI * 2);
         this.ctx.fillStyle = '#8B0000'; // Dark Red
+        this.ctx.fill();
         break;
       case 'jatoba':
-        this.ctx.fillStyle = '#654321'; // Brown
+        this.ctx.beginPath();
+        this.ctx.ellipse(cx, cy, this.tileSize / 2 - 1, this.tileSize / 4, 0, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#CD853F'; // Peru/Brown light
+        this.ctx.fill();
+        this.ctx.lineWidth = 2;
+        this.ctx.strokeStyle = '#654321'; // Dark brown contour
+        this.ctx.stroke();
         break;
       default:
         this.ctx.fillStyle = '#f5c842'; // fallback yellow
+        this.ctx.fillRect(
+          this.food.position.x * this.tileSize,
+          this.food.position.y * this.tileSize,
+          this.tileSize,
+          this.tileSize
+        );
     }
-    this.ctx.fillRect(
-      this.food.position.x * this.tileSize,
-      this.food.position.y * this.tileSize,
-      this.tileSize,
-      this.tileSize
-    );
 
     // Draw snake body (Minhoca - Rosa terroso)
-    this.ctx.fillStyle = '#d47b7b'; 
     for (let i = 0; i < this.snake.body.length; i++) {
       const segment = this.snake.body[i];
-      // Make head slightly different (darker pink)
+      const px = segment.x * this.tileSize;
+      const py = segment.y * this.tileSize;
+      
+      // Base square
+      this.ctx.fillStyle = i === 0 ? '#b35959' : '#d47b7b';
+      this.ctx.fillRect(px, py, this.tileSize, this.tileSize);
+      
+      // Volume/Shadow at the bottom
+      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+      this.ctx.fillRect(px, py + this.tileSize - 4, this.tileSize, 4);
+      
+      // Eyes for the head
       if (i === 0) {
-        this.ctx.fillStyle = '#b35959';
-      } else {
-        this.ctx.fillStyle = '#d47b7b';
+        this.ctx.fillStyle = 'black';
+        // Simplified eyes assuming always looking one direction for now, or just default drawn
+        // More complex would use snake direction
+        this.ctx.beginPath();
+        this.ctx.arc(px + 6, py + 6, 2, 0, Math.PI * 2);
+        this.ctx.arc(px + this.tileSize - 6, py + 6, 2, 0, Math.PI * 2);
+        this.ctx.fill();
       }
-      this.ctx.fillRect(
-        segment.x * this.tileSize, 
-        segment.y * this.tileSize, 
-        this.tileSize, 
-        this.tileSize
-      );
     }
   }
 

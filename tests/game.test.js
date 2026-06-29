@@ -16,9 +16,16 @@ describe('Game Loop and Rendering', () => {
       clearRect: vi.fn(),
       fillRect: vi.fn(),
       fillText: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      ellipse: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
       fillStyle: '',
       font: '',
-      textAlign: ''
+      textAlign: '',
+      lineWidth: 1,
+      strokeStyle: ''
     };
 
     const mockCanvas = {
@@ -36,7 +43,7 @@ describe('Game Loop and Rendering', () => {
     expect(game.tileSize).toBe(20); // 400 / 20 = 20
     expect(game.snake).toBeDefined();
     expect(game.isRunning).toBe(false);
-    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 200);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 120);
   });
 
   it('should start and stop the loop', () => {
@@ -122,9 +129,13 @@ describe('Game Loop and Rendering', () => {
   it('should update and save high score to localStorage on game over', () => {
     // Mock localStorage
     const localStorageMock = {
-      getItem: vi.fn(() => '5'),
+      getItem: vi.fn((key) => {
+        if (key === 'agro_leaderboard') return JSON.stringify([{name: 'AAA', score: 3}]);
+        return '5';
+      }),
       setItem: vi.fn()
     };
+    vi.stubGlobal('prompt', vi.fn(() => 'XYZ'));
     vi.stubGlobal('localStorage', localStorageMock);
 
     // Initial load high score
