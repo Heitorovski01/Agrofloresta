@@ -5,6 +5,11 @@ describe('Game Loop and Rendering', () => {
   let game;
   let mockCtx;
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   beforeEach(() => {
     // Mock canvas context
     mockCtx = {
@@ -26,11 +31,12 @@ describe('Game Loop and Rendering', () => {
     game = new Game(mockCanvas);
   });
 
-  it('should initialize with correct properties', () => {
+  it('should initialize with correct properties and draw start screen', () => {
     expect(game.gridSize).toBe(20);
     expect(game.tileSize).toBe(20); // 400 / 20 = 20
     expect(game.snake).toBeDefined();
     expect(game.isRunning).toBe(false);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 200);
   });
 
   it('should start and stop the loop', () => {
@@ -46,6 +52,8 @@ describe('Game Loop and Rendering', () => {
   });
 
   it('should render the game state correctly', () => {
+    // Draw without start screen interference
+    game.isRunning = true;
     game.draw();
     // It should clear the canvas
     expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 400, 400);
@@ -133,8 +141,6 @@ describe('Game Loop and Rendering', () => {
     expect(game.isGameOver).toBe(true);
     expect(localStorageMock.setItem).toHaveBeenCalledWith('agrofloresta_snake_highscore', '10');
     expect(game.highScore).toBe(10);
-    
-    vi.unstubAllGlobals();
   });
 
   it('should reset state on restart', () => {

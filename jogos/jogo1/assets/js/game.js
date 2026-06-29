@@ -20,6 +20,8 @@ export class Game {
 
     this.handleInput = this.handleInput.bind(this);
     this.loop = this.loop.bind(this);
+    
+    this.drawStartScreen();
   }
 
   loadHighScore() {
@@ -139,7 +141,22 @@ export class Game {
     this.ctx.fillText('Tente de novo', this.canvas.width / 2, this.canvas.height / 2 + 15);
   }
 
+  drawStartScreen() {
+    if (!this.ctx) return;
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    this.ctx.fillStyle = 'white';
+    this.ctx.font = '24px "Pixelify Sans", cursive';
+    this.ctx.textAlign = 'center';
+    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2);
+  }
+
   draw() {
+    if (!this.isRunning && !this.isGameOver) {
+      // Don't redraw loop if not running. Start screen is drawn on init.
+      return;
+    }
+    
     if (this.isGameOver) return; // Wait to keep game over screen intact
 
     // Clear canvas
