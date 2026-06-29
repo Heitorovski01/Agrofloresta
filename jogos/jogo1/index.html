@@ -16,7 +16,15 @@
         
         <div class="game-wrapper">
             <div id="scoreDisplay" class="pixel-text text-center" style="font-size: 1.5rem; margin-bottom: 1rem; color: var(--green-dark);">Sementes colhidas: 0 | Recorde: 0</div>
-            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <div class="canvas-container" style="position: relative;">
+                <canvas id="gameCanvas" width="400" height="400"></canvas>
+                
+                <div id="gameOverOverlay" class="hidden overlay pixel-text">
+                    <h2>Nova melhor colheita!</h2>
+                    <input type="text" id="playerNameInput" maxlength="3" placeholder="AAA">
+                    <button id="saveScoreBtn" class="btn btn-primary">Salvar</button>
+                </div>
+            </div>
             
             <div class="mobile-controls">
                 <button class="d-pad-btn" id="btnUp">▲</button>
@@ -31,6 +39,14 @@
                 <p>Use as <strong>Setas</strong>, <strong>WASD</strong> ou os <strong>botões</strong> para mover.</p>
                 <button id="startBtn" class="btn btn-primary pixel-text" style="margin-top: 1rem;">Iniciar / Reiniciar</button>
             </div>
+            
+            <div id="leaderboard" class="pixel-text text-center mt-2">
+                <h3>Top 3 Colheitas</h3>
+                <ul id="leaderboardList" class="clean-list">
+                    <!-- Populated via JS -->
+                </ul>
+            </div>
+
             <a href="../../index.html" class="pixel-text text-center" style="display:block; margin-top:2rem;">← Voltar para o site</a>
         </div>
     </div>
@@ -45,6 +61,7 @@
         
         // Initial score render
         game.updateScoreDisplay();
+        game.updateLeaderboardUI();
 
         startBtn.addEventListener('click', () => {
             if (game.isGameOver) {

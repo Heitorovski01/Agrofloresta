@@ -43,7 +43,7 @@ describe('Game Loop and Rendering', () => {
     expect(game.tileSize).toBe(20); // 400 / 20 = 20
     expect(game.snake).toBeDefined();
     expect(game.isRunning).toBe(false);
-    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 120);
+    expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 200, 200);
   });
 
   it('should start and stop the loop', () => {
@@ -126,17 +126,33 @@ describe('Game Loop and Rendering', () => {
     expect(game.food.position).not.toEqual({ x: 11, y: 10 });
   });
 
-  it('should update and save high score to localStorage on game over', () => {
-    // Mock localStorage
+  it('should update high score, trigger DOM overlay for Top 3, and save', () => {
+    // Mock localStorage for leaderboard
     const localStorageMock = {
       getItem: vi.fn((key) => {
         if (key === 'agro_leaderboard') return JSON.stringify([{name: 'AAA', score: 3}]);
-        return '5';
+        return '5'; // highscore
       }),
       setItem: vi.fn()
     };
-    vi.stubGlobal('prompt', vi.fn(() => 'XYZ'));
     vi.stubGlobal('localStorage', localStorageMock);
+    
+    // Mock DOM elements
+    const mockOverlay = { classList: { remove: vi.fn(), add: vi.fn() } };
+    const mockInput = { value: 'XYZ', focus: vi.fn() };
+    const mockScoreElement = { innerText: '' };
+    const mockLeaderboardList = { innerHTML: '', appendChild: vi.fn() };
+    
+    vi.stubGlobal('document', {
+      getElementById: vi.fn((id) => {
+        if (id === 'gameOverOverlay') return mockOverlay;
+        if (id === 'playerNameInput') return mockInput;
+        if (id === 'scoreDisplay') return mockScoreElement;
+        if (id === 'leaderboardList') return mockLeaderboardList;
+        return null;
+      }),
+      createElement: vi.fn(() => ({ innerText: '' }))
+    });
 
     // Initial load high score
     game.loadHighScore();
@@ -153,9 +169,41 @@ describe('Game Loop and Rendering', () => {
     expect(localStorageMock.setItem).toHaveBeenCalledWith('agrofloresta_snake_highscore', '10');
     expect(game.highScore).toBe(10);
 
-    // Assert that the proper strings are drawn on game over
+    // Assert that overlay was shown instead of canvas drawing
+    expect(mockOverlay.classList.remove).toHaveBeenCalledWith('hidden');
+    // The canvas game over text should not be drawn yet
+    expect(mockCtx.fillText).not.toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
+
+    // Simulate saving the score
+    game.handleSaveScore();
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('agro_leaderboard', expect.any(String));
+    expect(mockOverlay.classList.add).toHaveBeenCalledWith('hidden');
     expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
-    expect(mockCtx.fillText).toHaveBeenCalledWith('Tente de novo', 200, 215);
+  });
+
+  it('should skip overlay and draw game over if not Top 3', () => {
+    const localStorageMock = {
+      getItem: vi.fn((key) => {
+        if (key === 'agro_leaderboard') return JSON.stringify([
+          {name: 'AAA', score: 100},
+          {name: 'BBB', score: 90},
+          {name: 'CCC', score: 80}
+        ]);
+        return '5';
+      }),
+      setItem: vi.fn()
+    };
+    vi.stubGlobal('localStorage', localStorageMock);
+    
+    vi.stubGlobal('document', {
+      getElementById: vi.fn(() => null)
+    });
+
+    game.score = 10; // Not top 3
+    game.triggerGameOver();
+    
+    // Overlay logic skipped, canvas drawn immediately
+    expect(mockCtx.fillText).toHaveBeenCalledWith('A terra precisa de você!', 200, 185);
   });
 
   it('should reset state on restart', () => {

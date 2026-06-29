@@ -1,6 +1,6 @@
 import { Snake } from './snake.js';
 import { Food } from './food.js';
-import { saveScore, getLeaderboard } from './score.js';
+import { getTop3, checkIfTop3, saveToLeaderboard } from './score.js';
 
 export class Game {
   constructor(canvas) {
@@ -21,8 +21,33 @@ export class Game {
 
     this.handleInput = this.handleInput.bind(this);
     this.loop = this.loop.bind(this);
+    this.handleSaveScore = this.handleSaveScore.bind(this);
     
     this.drawStartScreen();
+    this.setupOverlayEvents();
+  }
+
+  setupOverlayEvents() {
+    const saveBtn = document.getElementById('saveScoreBtn');
+    if (saveBtn) {
+      saveBtn.addEventListener('click', this.handleSaveScore);
+    }
+  }
+
+  handleSaveScore() {
+    const input = document.getElementById('playerNameInput');
+    if (!input) return;
+    
+    let playerName = input.value.trim().substring(0, 3).toUpperCase();
+    if (playerName.length === 0) playerName = 'AAA';
+    
+    saveToLeaderboard(playerName, this.score);
+    
+    const overlay = document.getElementById('gameOverOverlay');
+    if (overlay) overlay.classList.add('hidden');
+    
+    this.updateLeaderboardUI();
+    this.drawGameOver();
   }
 
   loadHighScore() {
@@ -110,18 +135,6 @@ export class Game {
     this.isGameOver = true;
     this.stop();
     
-    // Check and save High Score (Leaderboard logic)
-    const leaderboard = getLeaderboard();
-    const isTop5 = leaderboard.length < 5 || this.score > leaderboard[leaderboard.length - 1].score;
-    
-    if (isTop5 && this.score > 0) {
-      let playerName = prompt("Parabéns! Você entrou no Top 5! Insira 3 letras para o seu nome:");
-      if (playerName) {
-        playerName = playerName.substring(0, 3).toUpperCase();
-        saveScore(playerName, this.score);
-      }
-    }
-
     if (this.score > this.highScore) {
       this.highScore = this.score;
       try {
@@ -131,8 +144,23 @@ export class Game {
       }
     }
     
+    this.updateScoreDisplay();
+
+    // Check Leaderboard logic
+    if (checkIfTop3(this.score)) {
+      const overlay = document.getElementById('gameOverOverlay');
+      if (overlay) {
+        overlay.classList.remove('hidden');
+        const input = document.getElementById('playerNameInput');
+        if (input) {
+          input.value = '';
+          input.focus();
+        }
+        return; // Don't draw canvas game over yet, wait for save
+      }
+    }
+
     this.drawGameOver();
-    this.updateScoreDisplay(); // Update UI to show new high score
   }
 
   updateScoreDisplay() {
@@ -140,6 +168,25 @@ export class Game {
     if (scoreElement) {
       scoreElement.innerText = `Sementes colhidas: ${this.score} | Recorde: ${this.highScore}`;
     }
+  }
+
+  updateLeaderboardUI() {
+    const list = document.getElementById('leaderboardList');
+    if (!list) return;
+    
+    const top3 = getTop3();
+    list.innerHTML = '';
+    
+    if (top3.length === 0) {
+      list.innerHTML = '<li>Nenhum recorde ainda</li>';
+      return;
+    }
+    
+    top3.forEach((entry, index) => {
+      const li = document.createElement('li');
+      li.innerText = `${index + 1}. ${entry.name} - ${entry.score}`;
+      list.appendChild(li);
+    });
   }
 
   drawGameOver() {
@@ -160,22 +207,7 @@ export class Game {
     this.ctx.fillStyle = 'white';
     this.ctx.font = '24px "Pixelify Sans", cursive';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2 - 80);
-    
-    // Leaderboard Display
-    const leaderboard = getLeaderboard();
-    this.ctx.font = '20px "Pixelify Sans", cursive';
-    this.ctx.fillText('--- TOP 5 ---', this.canvas.width / 2, this.canvas.height / 2 - 30);
-    
-    if (leaderboard.length === 0) {
-      this.ctx.font = '16px "Pixelify Sans", cursive';
-      this.ctx.fillText('Nenhum recorde ainda', this.canvas.width / 2, this.canvas.height / 2);
-    } else {
-      this.ctx.font = '16px "Pixelify Sans", cursive';
-      leaderboard.forEach((entry, index) => {
-        this.ctx.fillText(`${index + 1}. ${entry.name} - ${entry.score}`, this.canvas.width / 2, this.canvas.height / 2 + (index * 20));
-      });
-    }
+    this.ctx.fillText('Pressione Iniciar', this.canvas.width / 2, this.canvas.height / 2);
   }
 
   draw() {
