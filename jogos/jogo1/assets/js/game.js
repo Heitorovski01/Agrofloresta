@@ -12,11 +12,35 @@ export class Game {
     this.isRunning = false;
     this.isGameOver = false;
     this.score = 0;
+    this.highScore = 0;
     this.intervalId = null;
     this.tickRate = 150; // ms
 
+    this.loadHighScore();
+
     this.handleInput = this.handleInput.bind(this);
     this.loop = this.loop.bind(this);
+  }
+
+  loadHighScore() {
+    try {
+      const saved = localStorage.getItem('agrofloresta_snake_highscore');
+      if (saved) {
+        this.highScore = parseInt(saved, 10);
+      }
+    } catch (e) {
+      console.warn("localStorage not available");
+    }
+  }
+
+  restart() {
+    this.stop();
+    this.snake = new Snake(10, 10);
+    this.food = new Food(this.gridSize);
+    this.isGameOver = false;
+    this.score = 0;
+    this.updateScoreDisplay();
+    this.start();
   }
 
   start() {
@@ -58,18 +82,14 @@ export class Game {
 
     // Wall collision
     if (head.x < 0 || head.x >= this.gridSize || head.y < 0 || head.y >= this.gridSize) {
-      this.isGameOver = true;
-      this.stop();
-      this.drawGameOver();
+      this.triggerGameOver();
       return;
     }
 
     // Body collision
     for (let i = 1; i < this.snake.body.length; i++) {
       if (head.x === this.snake.body[i].x && head.y === this.snake.body[i].y) {
-        this.isGameOver = true;
-        this.stop();
-        this.drawGameOver();
+        this.triggerGameOver();
         return;
       }
     }
@@ -83,10 +103,28 @@ export class Game {
     }
   }
 
+  triggerGameOver() {
+    this.isGameOver = true;
+    this.stop();
+    
+    // Check and save High Score
+    if (this.score > this.highScore) {
+      this.highScore = this.score;
+      try {
+        localStorage.setItem('agrofloresta_snake_highscore', this.highScore.toString());
+      } catch (e) {
+        console.warn("localStorage not available");
+      }
+    }
+    
+    this.drawGameOver();
+    this.updateScoreDisplay(); // Update UI to show new high score
+  }
+
   updateScoreDisplay() {
     const scoreElement = document.getElementById('scoreDisplay');
     if (scoreElement) {
-      scoreElement.innerText = `Sementes colhidas: ${this.score}`;
+      scoreElement.innerText = `Sementes colhidas: ${this.score} | Recorde: ${this.highScore}`;
     }
   }
 
