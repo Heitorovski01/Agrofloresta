@@ -54,14 +54,21 @@
     <!-- Script loaded as module -->
     <script type="module">
         import { Game } from './assets/js/game.js';
+        import { preloadAssets } from './assets/js/assets.js';
         
         const canvas = document.getElementById('gameCanvas');
         const startBtn = document.getElementById('startBtn');
         const game = new Game(canvas);
         
-        // Initial score render
-        game.updateScoreDisplay();
-        game.updateLeaderboardUI();
+        startBtn.disabled = true;
+        startBtn.innerText = 'Carregando...';
+        
+        preloadAssets(() => {
+            startBtn.disabled = false;
+            startBtn.innerText = 'Iniciar / Reiniciar';
+            game.updateScoreDisplay();
+            game.updateLeaderboardUI();
+        });
 
         startBtn.addEventListener('click', () => {
             if (game.isGameOver) {

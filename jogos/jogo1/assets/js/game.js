@@ -1,6 +1,7 @@
 import { Snake } from './snake.js';
 import { Food } from './food.js';
 import { getTop3, checkIfTop3, saveToLeaderboard } from './score.js';
+import { getAsset } from './assets.js';
 
 export class Game {
   constructor(canvas) {
@@ -314,14 +315,23 @@ export class Game {
 
     // Draw Decorations
     this.decorations.forEach(dec => {
-      const cx = dec.x * this.tileSize + this.tileSize / 2;
-      const cy = dec.y * this.tileSize + this.tileSize / 2;
+      const px = dec.x * this.tileSize;
+      const py = dec.y * this.tileSize;
       if (dec.type === 'leaf') {
-         this.ctx.fillStyle = '#6b8e23'; // Faded green
-         this.ctx.beginPath();
-         this.ctx.ellipse(cx, cy, this.tileSize*0.3, this.tileSize*0.15, Math.PI / 4, 0, Math.PI * 2);
-         this.ctx.fill();
+         const folhaImg = getAsset('folha');
+         if (folhaImg) {
+           this.ctx.drawImage(folhaImg, px, py, this.tileSize, this.tileSize);
+         } else {
+           const cx = px + this.tileSize / 2;
+           const cy = py + this.tileSize / 2;
+           this.ctx.fillStyle = '#6b8e23'; // Faded green
+           this.ctx.beginPath();
+           this.ctx.ellipse(cx, cy, this.tileSize*0.3, this.tileSize*0.15, Math.PI / 4, 0, Math.PI * 2);
+           this.ctx.fill();
+         }
       } else {
+         const cx = px + this.tileSize / 2;
+         const cy = py + this.tileSize / 2;
          this.ctx.fillStyle = '#654321'; // Dirt
          this.ctx.beginPath();
          this.ctx.arc(cx, cy, this.tileSize*0.25, 0, Math.PI * 2);
@@ -330,136 +340,170 @@ export class Game {
     });
 
     // Draw Obstacles (e.g. Rocks)
+    const pedraImg = getAsset('pedra');
     this.obstacles.forEach(obs => {
-      const cx = obs.x * this.tileSize + this.tileSize / 2;
-      const cy = obs.y * this.tileSize + this.tileSize / 2;
-      this.ctx.fillStyle = '#696969'; // Dim Gray
-      this.ctx.beginPath();
-      this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
-      this.ctx.lineTo(cx + this.tileSize * 0.4, cy + this.tileSize * 0.3);
-      this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
-      this.ctx.fill();
-      
-      this.ctx.fillStyle = '#808080'; // Gray highlight
-      this.ctx.beginPath();
-      this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
-      this.ctx.lineTo(cx, cy + this.tileSize * 0.3);
-      this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
-      this.ctx.fill();
+      const px = obs.x * this.tileSize;
+      const py = obs.y * this.tileSize;
+      if (pedraImg) {
+        this.ctx.drawImage(pedraImg, px, py, this.tileSize, this.tileSize);
+      } else {
+        const cx = px + this.tileSize / 2;
+        const cy = py + this.tileSize / 2;
+        this.ctx.fillStyle = '#696969'; // Dim Gray
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
+        this.ctx.lineTo(cx + this.tileSize * 0.4, cy + this.tileSize * 0.3);
+        this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
+        this.ctx.fill();
+        
+        this.ctx.fillStyle = '#808080'; // Gray highlight
+        this.ctx.beginPath();
+        this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
+        this.ctx.lineTo(cx, cy + this.tileSize * 0.3);
+        this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
+        this.ctx.fill();
+      }
     });
 
     // Draw food based on type
-    const cx = this.food.position.x * this.tileSize + this.tileSize / 2;
-    const cy = this.food.position.y * this.tileSize + this.tileSize / 2;
-    const radius = this.tileSize / 2 - 2;
+    const pxFood = this.food.position.x * this.tileSize;
+    const pyFood = this.food.position.y * this.tileSize;
+    const foodImg = getAsset(this.food.type);
     
-    // Fallback drawImage placeholder structure:
-    // const img = new Image(); img.src = 'path.png'; this.ctx.drawImage(img, cx - radius, cy - radius, this.tileSize, this.tileSize);
-    
-    switch (this.food.type) {
-      case 'pequi':
-        const gradPequi = this.ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
-        gradPequi.addColorStop(0, '#FFF59D');
-        gradPequi.addColorStop(0.5, '#FFC107');
-        gradPequi.addColorStop(1, '#FF8C00');
-        
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        this.ctx.fillStyle = gradPequi;
-        this.ctx.fill();
-        break;
-
-      case 'buriti':
-        this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy, radius * 0.9, radius * 1.1, 0, 0, Math.PI * 2); 
-        
-        const gradBuriti = this.ctx.createRadialGradient(cx, cy, radius*0.2, cx, cy, radius*1.2);
-        gradBuriti.addColorStop(0, '#B22222');
-        gradBuriti.addColorStop(1, '#5C1515');
-
-        this.ctx.fillStyle = gradBuriti;
-        this.ctx.fill();
-        
-        this.ctx.strokeStyle = '#3A0D0D';
-        this.ctx.lineWidth = 1.5;
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx - radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx + radius*0.5, cy + radius*0.6);
-        this.ctx.moveTo(cx + radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx - radius*0.5, cy + radius*0.6);
-        this.ctx.stroke();
-        break;
-
-      case 'jatoba':
-      case 'baru':
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx - radius, cy);
-        this.ctx.bezierCurveTo(cx - radius, cy - radius*1.2, cx + radius, cy - radius*1.2, cx + radius, cy);
-        this.ctx.bezierCurveTo(cx + radius, cy + radius*0.5, cx - radius, cy + radius*0.5, cx - radius, cy);
-        
-        this.ctx.fillStyle = '#654321';
-        this.ctx.fill();
-        
-        this.ctx.beginPath();
-        this.ctx.ellipse(cx, cy - radius*0.3, radius*0.5, radius*0.15, 0, 0, Math.PI * 2);
-        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-        this.ctx.fill();
-        break;
-
-      default:
-        this.ctx.fillStyle = '#f5c842';
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
-        this.ctx.fill();
+    if (foodImg) {
+      this.ctx.drawImage(foodImg, pxFood, pyFood, this.tileSize, this.tileSize);
+    } else {
+      const cx = pxFood + this.tileSize / 2;
+      const cy = pyFood + this.tileSize / 2;
+      const radius = this.tileSize / 2 - 2;
+      
+      switch (this.food.type) {
+        case 'pequi':
+          const gradPequi = this.ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
+          gradPequi.addColorStop(0, '#FFF59D');
+          gradPequi.addColorStop(0.5, '#FFC107');
+          gradPequi.addColorStop(1, '#FF8C00');
+          this.ctx.beginPath();
+          this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          this.ctx.fillStyle = gradPequi;
+          this.ctx.fill();
+          break;
+        case 'buriti':
+          this.ctx.beginPath();
+          this.ctx.ellipse(cx, cy, radius * 0.9, radius * 1.1, 0, 0, Math.PI * 2); 
+          const gradBuriti = this.ctx.createRadialGradient(cx, cy, radius*0.2, cx, cy, radius*1.2);
+          gradBuriti.addColorStop(0, '#B22222');
+          gradBuriti.addColorStop(1, '#5C1515');
+          this.ctx.fillStyle = gradBuriti;
+          this.ctx.fill();
+          this.ctx.strokeStyle = '#3A0D0D';
+          this.ctx.lineWidth = 1.5;
+          this.ctx.beginPath();
+          this.ctx.moveTo(cx - radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx + radius*0.5, cy + radius*0.6);
+          this.ctx.moveTo(cx + radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx - radius*0.5, cy + radius*0.6);
+          this.ctx.stroke();
+          break;
+        case 'jatoba':
+        case 'baru':
+          this.ctx.beginPath();
+          this.ctx.moveTo(cx - radius, cy);
+          this.ctx.bezierCurveTo(cx - radius, cy - radius*1.2, cx + radius, cy - radius*1.2, cx + radius, cy);
+          this.ctx.bezierCurveTo(cx + radius, cy + radius*0.5, cx - radius, cy + radius*0.5, cx - radius, cy);
+          this.ctx.fillStyle = '#654321';
+          this.ctx.fill();
+          this.ctx.beginPath();
+          this.ctx.ellipse(cx, cy - radius*0.3, radius*0.5, radius*0.15, 0, 0, Math.PI * 2);
+          this.ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+          this.ctx.fill();
+          break;
+        default:
+          this.ctx.fillStyle = '#f5c842';
+          this.ctx.beginPath();
+          this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          this.ctx.fill();
+      }
     }
 
-    // Draw snake body (Cylindrical Path)
+    // Draw snake body
     if (this.snake.body.length > 0) {
-      const offset = this.tileSize / 2;
+      const cabecaImg = getAsset('cabeca');
+      const corpoImg = getAsset('corpo');
       
-      this.ctx.beginPath();
-      this.ctx.strokeStyle = '#d47b7b';
-      this.ctx.lineWidth = this.tileSize * 0.8;
-      this.ctx.lineCap = 'round';
-      this.ctx.lineJoin = 'round';
-      
-      // Shadow for organic feel
-      this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-      this.ctx.shadowBlur = 4;
-      this.ctx.shadowOffsetX = 2;
-      this.ctx.shadowOffsetY = 2;
-      
-      this.ctx.moveTo(
-        this.snake.body[0].x * this.tileSize + offset,
-        this.snake.body[0].y * this.tileSize + offset
-      );
-      
-      for (let i = 1; i < this.snake.body.length; i++) {
-        this.ctx.lineTo(
-          this.snake.body[i].x * this.tileSize + offset,
-          this.snake.body[i].y * this.tileSize + offset
+      if (cabecaImg && corpoImg) {
+        // Sprite rendering
+        for (let i = this.snake.body.length - 1; i >= 0; i--) {
+          const segment = this.snake.body[i];
+          const px = segment.x * this.tileSize;
+          const py = segment.y * this.tileSize;
+          
+          if (i === 0) {
+            // Draw Head with rotation
+            let angle = 0;
+            // Default direction facing right.
+            const dirX = this.snake.direction.x || 1; // fallback to 1 if start 0,0
+            const dirY = this.snake.direction.y || 0;
+            // For a sprite that faces right by default:
+            angle = Math.atan2(dirY, dirX);
+            // If the head sprite is drawn facing UP, we need angle = Math.atan2(dirY, dirX) + Math.PI/2.
+            // Assuming it faces Right.
+            
+            this.ctx.save();
+            this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
+            this.ctx.rotate(angle);
+            this.ctx.drawImage(cabecaImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
+            this.ctx.restore();
+          } else {
+            // Draw Body
+            this.ctx.drawImage(corpoImg, px, py, this.tileSize, this.tileSize);
+          }
+        }
+      } else {
+        // Fallback Cylindrical Path rendering
+        const offset = this.tileSize / 2;
+        
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = '#d47b7b';
+        this.ctx.lineWidth = this.tileSize * 0.8;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.shadowBlur = 4;
+        this.ctx.shadowOffsetX = 2;
+        this.ctx.shadowOffsetY = 2;
+        
+        this.ctx.moveTo(
+          this.snake.body[0].x * this.tileSize + offset,
+          this.snake.body[0].y * this.tileSize + offset
         );
+        
+        for (let i = 1; i < this.snake.body.length; i++) {
+          this.ctx.lineTo(
+            this.snake.body[i].x * this.tileSize + offset,
+            this.snake.body[i].y * this.tileSize + offset
+          );
+        }
+        this.ctx.stroke();
+
+        this.ctx.shadowColor = 'transparent';
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+
+        const headX = this.snake.body[0].x * this.tileSize + offset;
+        const headY = this.snake.body[0].y * this.tileSize + offset;
+        
+        this.ctx.fillStyle = '#b35959'; 
+        this.ctx.beginPath();
+        this.ctx.arc(headX, headY, this.tileSize * 0.35, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.fillStyle = 'black';
+        this.ctx.beginPath();
+        this.ctx.arc(headX - this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
+        this.ctx.arc(headX + this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
+        this.ctx.fill();
       }
-      this.ctx.stroke();
-
-      // Reset shadow for the head details
-      this.ctx.shadowColor = 'transparent';
-      this.ctx.shadowBlur = 0;
-      this.ctx.shadowOffsetX = 0;
-      this.ctx.shadowOffsetY = 0;
-
-      // Head details
-      const headX = this.snake.body[0].x * this.tileSize + offset;
-      const headY = this.snake.body[0].y * this.tileSize + offset;
-      
-      this.ctx.fillStyle = '#b35959'; 
-      this.ctx.beginPath();
-      this.ctx.arc(headX, headY, this.tileSize * 0.35, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      this.ctx.fillStyle = 'black';
-      this.ctx.beginPath();
-      this.ctx.arc(headX - this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
-      this.ctx.arc(headX + this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
-      this.ctx.fill();
     }
   }
 
