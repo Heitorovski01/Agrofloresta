@@ -1,12 +1,47 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jogo 1 | AgroFloresta na Escola</title>
+    <title>Semeador - Agrofloresta</title>
+    <!-- Importing global CSS and fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Pixelify+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/game.css">
 </head>
-<body>
-    <h1>Jogo 1 — em breve</h1>
-    <a href="../../index.html">← Voltar para o site</a>
+<body class="bg-cream">
+    <div class="container section-padding">
+        <h1 class="text-center pixel-text" style="color: var(--green-dark);">Colheita Agroflorestal</h1>
+        <p class="text-center" style="margin-bottom: 2rem;">Controle a minhoca e prepare o solo para as sementes do Cerrado!</p>
+        
+        <div class="game-wrapper">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+            
+            <div class="game-instructions text-center">
+                <p>Use as <strong>Setas</strong> ou <strong>WASD</strong> para mover.</p>
+                <button id="startBtn" class="btn btn-primary pixel-text" style="margin-top: 1rem;">Iniciar Jogo</button>
+            </div>
+            <a href="../../index.html" class="pixel-text text-center" style="display:block; margin-top:2rem;">← Voltar para o site</a>
+        </div>
+    </div>
+
+    <!-- Script loaded as module -->
+    <script type="module">
+        import { Game } from './assets/js/game.js';
+        
+        const canvas = document.getElementById('gameCanvas');
+        const startBtn = document.getElementById('startBtn');
+        const game = new Game(canvas);
+
+        startBtn.addEventListener('click', () => {
+            game.start();
+            startBtn.blur(); // Remove focus to prevent spacebar from clicking it again
+            
+            // Initial movement to start right away
+            if(game.snake.direction.x === 0 && game.snake.direction.y === 0) {
+               game.snake.changeDirection({ x: 1, y: 0 });
+            }
+        });
+    </script>
 </body>
 </html>
