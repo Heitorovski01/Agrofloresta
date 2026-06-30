@@ -26,11 +26,8 @@ agrofloresta/
 │   └── js/main.js
 ├── jogos/
 │   ├── jogo1/
-│   │   ├── assets/
-│   │   └── index.html
-│   └── jogo2/
-│       ├── assets/
-│       └── index.html
+|      ├── assets/
+|        └── index.html
 ├── index.html
 ├── LICENSE
 └── README.md
