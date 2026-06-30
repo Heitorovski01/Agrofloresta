@@ -185,6 +185,7 @@ img, svg {
     background-color: var(--green-dark);
     color: var(--cream);
     position: relative;
+    z-index: 1; /* Cria contexto de empilhamento para o ::before funcionar */
     overflow: hidden;
     padding: 8rem 0;
     text-align: center;
