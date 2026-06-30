@@ -342,8 +342,17 @@ export class Game {
             this.ctx.drawImage(cabecaImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
             this.ctx.restore();
           } else {
-            // Draw Body
-            this.ctx.drawImage(corpoImg, px, py, this.tileSize, this.tileSize);
+            // Draw Body with rotation
+            const prev = this.snake.body[i - 1];
+            const dx = prev.x - segment.x;
+            const dy = prev.y - segment.y;
+            const angle = Math.atan2(dy, dx);
+            
+            this.ctx.save();
+            this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
+            this.ctx.rotate(angle);
+            this.ctx.drawImage(corpoImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
+            this.ctx.restore();
           }
         }
       } else {
