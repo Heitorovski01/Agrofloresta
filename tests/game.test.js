@@ -74,6 +74,7 @@ describe('Game Loop and Rendering', () => {
   it('should render the game state correctly', () => {
     // Draw without start screen interference
     game.isRunning = true;
+    game.snake.body.push({ x: 9, y: 10 }); // Add body segment to trigger stroke()
     game.draw();
     // It should clear the canvas logical bounds (15 * 32 = 480, 17 * 32 = 544)
     expect(mockCtx.clearRect).toHaveBeenCalledWith(0, 0, 480, 544);
