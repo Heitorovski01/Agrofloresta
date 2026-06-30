@@ -4,8 +4,7 @@ const ASSET_PATHS = {
   jatoba: '../../assets/img/jatoba.png',
   pedra: '../../assets/img/pedra.png',
   folha: '../../assets/img/folha.png',
-  grama: '../../assets/img/grama.png',
-  tilemap: '../../assets/img/tilemap.png'
+  grama: '../../assets/img/grama.png'
 };
 
 const loadedAssets = {};

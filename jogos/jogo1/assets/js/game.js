@@ -314,132 +314,64 @@ export class Game {
     }
 
     // Draw snake body
+    // Draw snake body
     if (this.snake.body.length > 0) {
-      const tilemapImg = getAsset('tilemap');
-      
-      if (tilemapImg) {
-        const SPRITE_SIZE = 64; // Native tilemap cell resolution
-        const TILES = {
-          headUp: [3, 0], headRight: [4, 0], headDown: [4, 1], headLeft: [3, 1],
-          bodyVert: [2, 1], bodyHoriz: [1, 0],
-          cornerTopLeft: [0, 0], cornerTopRight: [2, 0], cornerBottomLeft: [0, 1], cornerBottomRight: [2, 1],
-          tailUp: [3, 2], tailRight: [4, 2], tailDown: [4, 3], tailLeft: [3, 3]
-        };
-        
-        for (let i = this.snake.body.length - 1; i >= 0; i--) {
-          const segment = this.snake.body[i];
-          const px = segment.x * this.CELL_SIZE;
-          const py = segment.y * this.CELL_SIZE;
-          let tileName = 'bodyHoriz';
-          
-          if (i === 0) {
-             // Head
-             const dirX = this.snake.direction.x;
-             const dirY = this.snake.direction.y;
-             if (dirX === 1) tileName = 'headRight';
-             else if (dirX === -1) tileName = 'headLeft';
-             else if (dirY === 1) tileName = 'headDown';
-             else if (dirY === -1) tileName = 'headUp';
-             else tileName = 'headRight'; // fallback
-          } else if (i === this.snake.body.length - 1) {
-             // Tail
-             const prev = this.snake.body[i - 1]; // segment towards head
-             let dx = prev.x - segment.x;
-             let dy = prev.y - segment.y;
-             
-             // Pac-man wrap around check
-             if (Math.abs(dx) > 1) dx = dx > 0 ? -1 : 1;
-             if (Math.abs(dy) > 1) dy = dy > 0 ? -1 : 1;
-             
-             if (dx > 0) tileName = 'tailRight';
-             else if (dx < 0) tileName = 'tailLeft';
-             else if (dy > 0) tileName = 'tailDown';
-             else if (dy < 0) tileName = 'tailUp';
-             else tileName = 'tailRight';
-          } else {
-             // Body
-             const prev = this.snake.body[i - 1]; // towards head
-             const next = this.snake.body[i + 1]; // towards tail
-             
-             let dxPrev = prev.x - segment.x;
-             let dyPrev = prev.y - segment.y;
-             let dxNext = next.x - segment.x;
-             let dyNext = next.y - segment.y;
-             
-             if (Math.abs(dxPrev) > 1) dxPrev = dxPrev > 0 ? -1 : 1;
-             if (Math.abs(dyPrev) > 1) dyPrev = dyPrev > 0 ? -1 : 1;
-             if (Math.abs(dxNext) > 1) dxNext = dxNext > 0 ? -1 : 1;
-             if (Math.abs(dyNext) > 1) dyNext = dyNext > 0 ? -1 : 1;
+      const offset = this.CELL_SIZE / 2;
 
-             if (dxPrev === 0 && dxNext === 0) {
-                tileName = 'bodyVert';
-             } else if (dyPrev === 0 && dyNext === 0) {
-                tileName = 'bodyHoriz';
-             } else {
-                if ((dxPrev === -1 && dyNext === -1) || (dxNext === -1 && dyPrev === -1)) tileName = 'cornerTopLeft';
-                else if ((dxPrev === 1 && dyNext === -1) || (dxNext === 1 && dyPrev === -1)) tileName = 'cornerTopRight';
-                else if ((dxPrev === -1 && dyNext === 1) || (dxNext === -1 && dyPrev === 1)) tileName = 'cornerBottomLeft';
-                else if ((dxPrev === 1 && dyNext === 1) || (dxNext === 1 && dyPrev === 1)) tileName = 'cornerBottomRight';
-             }
-          }
-          
-          const coords = TILES[tileName];
-          const sx = coords[0] * SPRITE_SIZE;
-          const sy = coords[1] * SPRITE_SIZE;
-          
-          this.ctx.drawImage(
-            tilemapImg, 
-            sx, sy, SPRITE_SIZE, SPRITE_SIZE, 
-            px, py, this.CELL_SIZE, this.CELL_SIZE
-          );
-        }
-      } else {
-        // Fallback Cylindrical Path rendering
-        const offset = this.tileSize / 2;
-        
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = '#d47b7b';
-        this.ctx.lineWidth = this.tileSize * 0.8;
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
-        
-        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-        this.ctx.shadowBlur = 4;
-        this.ctx.shadowOffsetX = 2;
-        this.ctx.shadowOffsetY = 2;
-        
-        this.ctx.moveTo(
-          this.snake.body[0].x * this.tileSize + offset,
-          this.snake.body[0].y * this.tileSize + offset
+      this.ctx.beginPath();
+      this.ctx.strokeStyle = '#d68a7a';
+      this.ctx.lineWidth = this.CELL_SIZE * 0.9;
+      this.ctx.lineCap = 'round';
+      this.ctx.lineJoin = 'round';
+
+      this.ctx.moveTo(
+        this.snake.body[0].x * this.CELL_SIZE + offset,
+        this.snake.body[0].y * this.CELL_SIZE + offset
+      );
+
+      for (let i = 1; i < this.snake.body.length; i++) {
+        this.ctx.lineTo(
+          this.snake.body[i].x * this.CELL_SIZE + offset,
+          this.snake.body[i].y * this.CELL_SIZE + offset
         );
-        
-        for (let i = 1; i < this.snake.body.length; i++) {
-          this.ctx.lineTo(
-            this.snake.body[i].x * this.tileSize + offset,
-            this.snake.body[i].y * this.tileSize + offset
-          );
-        }
-        this.ctx.stroke();
-
-        this.ctx.shadowColor = 'transparent';
-        this.ctx.shadowBlur = 0;
-        this.ctx.shadowOffsetX = 0;
-        this.ctx.shadowOffsetY = 0;
-
-        const headX = this.snake.body[0].x * this.tileSize + offset;
-        const headY = this.snake.body[0].y * this.tileSize + offset;
-        
-        this.ctx.fillStyle = '#b35959'; 
-        this.ctx.beginPath();
-        this.ctx.arc(headX, headY, this.tileSize * 0.35, 0, Math.PI * 2);
-        this.ctx.fill();
-        
-        this.ctx.fillStyle = 'black';
-        this.ctx.beginPath();
-        this.ctx.arc(headX - this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
-        this.ctx.arc(headX + this.tileSize * 0.15, headY - this.tileSize * 0.1, this.tileSize * 0.08, 0, Math.PI * 2);
-        this.ctx.fill();
       }
+      this.ctx.stroke();
+
+      // Draw eyes on the head
+      const headX = this.snake.body[0].x * this.CELL_SIZE + offset;
+      const headY = this.snake.body[0].y * this.CELL_SIZE + offset;
+      const dirX = this.snake.direction.x;
+      const dirY = this.snake.direction.y;
+      
+      // Calculate eye offsets based on direction
+      let eye1X, eye1Y, eye2X, eye2Y;
+      const eyeOffsetForward = this.CELL_SIZE * 0.15;
+      const eyeOffsetSide = this.CELL_SIZE * 0.25;
+
+      if (dirX === 1) { // Right
+        eye1X = headX + eyeOffsetForward; eye1Y = headY - eyeOffsetSide;
+        eye2X = headX + eyeOffsetForward; eye2Y = headY + eyeOffsetSide;
+      } else if (dirX === -1) { // Left
+        eye1X = headX - eyeOffsetForward; eye1Y = headY - eyeOffsetSide;
+        eye2X = headX - eyeOffsetForward; eye2Y = headY + eyeOffsetSide;
+      } else if (dirY === 1) { // Down
+        eye1X = headX - eyeOffsetSide; eye1Y = headY + eyeOffsetForward;
+        eye2X = headX + eyeOffsetSide; eye2Y = headY + eyeOffsetForward;
+      } else { // Up or default
+        eye1X = headX - eyeOffsetSide; eye1Y = headY - eyeOffsetForward;
+        eye2X = headX + eyeOffsetSide; eye2Y = headY - eyeOffsetForward;
+      }
+
+      this.ctx.fillStyle = '#000';
+      const eyeRadius = this.CELL_SIZE * 0.1;
+
+      this.ctx.beginPath();
+      this.ctx.arc(eye1X, eye1Y, eyeRadius, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      this.ctx.beginPath();
+      this.ctx.arc(eye2X, eye2Y, eyeRadius, 0, Math.PI * 2);
+      this.ctx.fill();
     }
   }
 
