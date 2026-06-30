@@ -319,40 +319,6 @@ img, svg {
     color: var(--green-dark);
 }
 
-/* Galeria Grid */
-.gallery-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-.gallery-item {
-    aspect-ratio: 16 / 9;
-    background-color: var(--green-dark);
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    border: 3px solid var(--green-mid);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--cream);
-    transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 4px 4px 0 var(--green-light);
-}
-
-.gallery-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 6px 6px 0 var(--green-light);
-}
-
-.gallery-item-inner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    opacity: 0.7;
-}
 
 /* Equipe Grid */
 .team-grid {
@@ -529,12 +495,10 @@ footer {
     .mobile-nav { display: none !important; }
     
     .features-grid { grid-template-columns: repeat(2, 1fr); }
-    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
     .reels-grid { grid-template-columns: repeat(3, 1fr); }
     .fab { display: none; }
 }
 
 @media (min-width: 1024px) {
     .features-grid { grid-template-columns: repeat(4, 1fr); }
-    .gallery-grid { grid-template-columns: repeat(3, 1fr); }
 }
