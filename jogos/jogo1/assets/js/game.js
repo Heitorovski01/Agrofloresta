@@ -326,15 +326,15 @@ export class Game {
           const py = segment.y * this.tileSize;
           
           if (i === 0) {
-            // Draw Head with rotation
+            // Draw Head with fixed rotation
             let angle = 0;
-            // Default direction facing right.
-            const dirX = this.snake.direction.x || 1; // fallback to 1 if start 0,0
-            const dirY = this.snake.direction.y || 0;
-            // For a sprite that faces right by default:
-            angle = Math.atan2(dirY, dirX);
-            // If the head sprite is drawn facing UP, we need angle = Math.atan2(dirY, dirX) + Math.PI/2.
-            // Assuming it faces Right.
+            const dirX = this.snake.direction.x;
+            const dirY = this.snake.direction.y;
+            
+            if (dirX === 1) angle = 0;
+            else if (dirX === -1) angle = Math.PI;
+            else if (dirY === 1) angle = Math.PI / 2;
+            else if (dirY === -1) angle = -Math.PI / 2;
             
             this.ctx.save();
             this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
@@ -354,6 +354,13 @@ export class Game {
             this.ctx.save();
             this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
             this.ctx.rotate(angle);
+            
+            // Draw joint
+            this.ctx.fillStyle = '#d47b7b';
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, this.tileSize * 0.45, 0, Math.PI * 2);
+            this.ctx.fill();
+            
             this.ctx.drawImage(corpoImg, -w / 2, -h / 2, w, h);
             this.ctx.restore();
           }
