@@ -318,7 +318,7 @@ export class Game {
       const tilemapImg = getAsset('tilemap');
       
       if (tilemapImg) {
-        const TILE_SIZE = 64; // Native tilemap cell resolution
+        const SPRITE_SIZE = 64; // Native tilemap cell resolution
         const TILES = {
           headUp: [3, 0], headRight: [4, 0], headDown: [4, 1], headLeft: [3, 1],
           bodyVert: [2, 1], bodyHoriz: [1, 0],
@@ -328,8 +328,8 @@ export class Game {
         
         for (let i = this.snake.body.length - 1; i >= 0; i--) {
           const segment = this.snake.body[i];
-          const px = segment.x * this.tileSize;
-          const py = segment.y * this.tileSize;
+          const px = segment.x * this.CELL_SIZE;
+          const py = segment.y * this.CELL_SIZE;
           let tileName = 'bodyHoriz';
           
           if (i === 0) {
@@ -384,10 +384,13 @@ export class Game {
           }
           
           const coords = TILES[tileName];
+          const sx = coords[0] * SPRITE_SIZE;
+          const sy = coords[1] * SPRITE_SIZE;
+          
           this.ctx.drawImage(
             tilemapImg, 
-            coords[0] * TILE_SIZE, coords[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE, 
-            px, py, this.tileSize, this.tileSize
+            sx, sy, SPRITE_SIZE, SPRITE_SIZE, 
+            px, py, this.CELL_SIZE, this.CELL_SIZE
           );
         }
       } else {
