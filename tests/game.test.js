@@ -63,11 +63,11 @@ describe('Game Loop and Rendering', () => {
     vi.useFakeTimers();
     game.start();
     expect(game.isRunning).toBe(true);
-    expect(game.intervalId).toBeDefined();
+    expect(game.rafId).toBeDefined();
 
     game.stop();
     expect(game.isRunning).toBe(false);
-    expect(game.intervalId).toBeNull();
+    expect(game.rafId).toBeNull();
     vi.useRealTimers();
   });
 

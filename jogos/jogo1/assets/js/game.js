@@ -30,8 +30,12 @@ export class Game {
     this.isGameOver = false;
     this.score = 0;
     this.highScore = 0;
-    this.intervalId = null;
+    this.rafId = null;
     this.tickRate = 150; // ms
+    
+    this.previousSnake = null;
+    this.lastRenderTime = 0;
+    this.accumulatedTime = 0;
 
     this.loadHighScore();
 
@@ -83,6 +87,7 @@ export class Game {
     this.food = new Food(this.gridCols, this.gridRows);
     this.isGameOver = false;
     this.score = 0;
+    this.previousSnake = null;
     this.updateScoreDisplay();
     this.start();
   }
@@ -91,15 +96,20 @@ export class Game {
     if (this.isRunning) return;
     this.isRunning = true;
     window.addEventListener('keydown', this.handleInput);
-    this.intervalId = setInterval(this.loop, this.tickRate);
+    
+    this.lastRenderTime = performance.now();
+    this.accumulatedTime = 0;
+    this.previousSnake = this.snake.body.map(s => ({ x: s.x, y: s.y }));
+    
+    this.rafId = requestAnimationFrame(this.loop);
   }
 
   stop() {
     this.isRunning = false;
     window.removeEventListener('keydown', this.handleInput);
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
     }
   }
 
@@ -226,7 +236,7 @@ export class Game {
     this.ctx.fillText('Pressione Iniciar', this.logicalWidth / 2, this.logicalHeight / 2);
   }
 
-  draw() {
+  draw(progress = 1.0) {
     if (!this.isRunning && !this.isGameOver) {
       // Don't redraw loop if not running. Start screen is drawn on init.
       return;
@@ -314,9 +324,9 @@ export class Game {
     }
 
     // Draw snake body
-    // Draw snake body
     if (this.snake.body.length > 0) {
       const offset = this.CELL_SIZE / 2;
+      const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
       this.ctx.beginPath();
       this.ctx.strokeStyle = '#d68a7a';
@@ -324,22 +334,35 @@ export class Game {
       this.ctx.lineCap = 'round';
       this.ctx.lineJoin = 'round';
 
-      this.ctx.moveTo(
-        this.snake.body[0].x * this.CELL_SIZE + offset,
-        this.snake.body[0].y * this.CELL_SIZE + offset
-      );
+      let px = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].x : this.snake.body[0].x;
+      let py = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].y : this.snake.body[0].y;
+      
+      let currX = this.snake.body[0].x;
+      let currY = this.snake.body[0].y;
+
+      let visualX = lerp(px, currX, progress) * this.CELL_SIZE + offset;
+      let visualY = lerp(py, currY, progress) * this.CELL_SIZE + offset;
+
+      this.ctx.moveTo(visualX, visualY);
+      this.ctx.lineTo(visualX, visualY); // Ensure zero-length line draws dot
 
       for (let i = 1; i < this.snake.body.length; i++) {
-        this.ctx.lineTo(
-          this.snake.body[i].x * this.CELL_SIZE + offset,
-          this.snake.body[i].y * this.CELL_SIZE + offset
-        );
+        let prevSegX = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].x : this.snake.body[i].x;
+        let prevSegY = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].y : this.snake.body[i].y;
+        
+        let cX = this.snake.body[i].x;
+        let cY = this.snake.body[i].y;
+        
+        let vX = lerp(prevSegX, cX, progress) * this.CELL_SIZE + offset;
+        let vY = lerp(prevSegY, cY, progress) * this.CELL_SIZE + offset;
+
+        this.ctx.lineTo(vX, vY);
       }
       this.ctx.stroke();
 
       // Draw eyes on the head
-      const headX = this.snake.body[0].x * this.CELL_SIZE + offset;
-      const headY = this.snake.body[0].y * this.CELL_SIZE + offset;
+      const headX = visualX;
+      const headY = visualY;
       const dirX = this.snake.direction.x;
       const dirY = this.snake.direction.y;
       
@@ -375,8 +398,34 @@ export class Game {
     }
   }
 
-  loop() {
-    this.update();
-    this.draw();
+  loop(timestamp) {
+    if (!this.isRunning) return;
+
+    if (typeof timestamp !== 'number') {
+      timestamp = performance.now();
+    }
+
+    let dt = timestamp - this.lastRenderTime;
+    this.lastRenderTime = timestamp;
+    this.accumulatedTime += dt;
+
+    // Fixed timestep update
+    while (this.accumulatedTime >= this.tickRate) {
+      this.previousSnake = this.snake.body.map(s => ({ x: s.x, y: s.y }));
+      this.update();
+      this.accumulatedTime -= this.tickRate;
+      
+      if (!this.isRunning) break;
+    }
+
+    let progress = this.accumulatedTime / this.tickRate;
+    if (progress > 1.0) progress = 1.0;
+    if (progress < 0.0) progress = 0.0;
+
+    this.draw(progress);
+
+    if (this.isRunning) {
+      this.rafId = requestAnimationFrame(this.loop);
+    }
   }
 }
