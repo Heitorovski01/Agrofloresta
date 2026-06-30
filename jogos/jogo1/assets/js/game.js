@@ -315,55 +315,80 @@ export class Game {
 
     // Draw snake body
     if (this.snake.body.length > 0) {
-      const cabecaImg = getAsset('cabeca');
-      const corpoImg = getAsset('corpo');
+      const tilemapImg = getAsset('tilemap');
       
-      if (cabecaImg && corpoImg) {
-        // Sprite rendering
+      if (tilemapImg) {
+        const TILE_SIZE = 64; // Native tilemap cell resolution
+        const TILES = {
+          headUp: [3, 0], headRight: [4, 0], headDown: [4, 1], headLeft: [3, 1],
+          bodyVert: [2, 1], bodyHoriz: [1, 0],
+          cornerTopLeft: [0, 0], cornerTopRight: [2, 0], cornerBottomLeft: [0, 1], cornerBottomRight: [2, 1],
+          tailUp: [3, 2], tailRight: [4, 2], tailDown: [4, 3], tailLeft: [3, 3]
+        };
+        
         for (let i = this.snake.body.length - 1; i >= 0; i--) {
           const segment = this.snake.body[i];
           const px = segment.x * this.tileSize;
           const py = segment.y * this.tileSize;
+          let tileName = 'bodyHoriz';
           
           if (i === 0) {
-            // Draw Head with fixed rotation
-            let angle = 0;
-            const dirX = this.snake.direction.x;
-            const dirY = this.snake.direction.y;
-            
-            if (dirX === 1) angle = 0;
-            else if (dirX === -1) angle = Math.PI;
-            else if (dirY === 1) angle = Math.PI / 2;
-            else if (dirY === -1) angle = -Math.PI / 2;
-            
-            this.ctx.save();
-            this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
-            this.ctx.rotate(angle);
-            this.ctx.drawImage(cabecaImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
-            this.ctx.restore();
+             // Head
+             const dirX = this.snake.direction.x;
+             const dirY = this.snake.direction.y;
+             if (dirX === 1) tileName = 'headRight';
+             else if (dirX === -1) tileName = 'headLeft';
+             else if (dirY === 1) tileName = 'headDown';
+             else if (dirY === -1) tileName = 'headUp';
+             else tileName = 'headRight'; // fallback
+          } else if (i === this.snake.body.length - 1) {
+             // Tail
+             const prev = this.snake.body[i - 1]; // segment towards head
+             let dx = prev.x - segment.x;
+             let dy = prev.y - segment.y;
+             
+             // Pac-man wrap around check
+             if (Math.abs(dx) > 1) dx = dx > 0 ? -1 : 1;
+             if (Math.abs(dy) > 1) dy = dy > 0 ? -1 : 1;
+             
+             if (dx > 0) tileName = 'tailRight';
+             else if (dx < 0) tileName = 'tailLeft';
+             else if (dy > 0) tileName = 'tailDown';
+             else if (dy < 0) tileName = 'tailUp';
+             else tileName = 'tailRight';
           } else {
-            // Draw Body with rotation and overlap
-            const prev = this.snake.body[i - 1];
-            const dx = prev.x - segment.x;
-            const dy = prev.y - segment.y;
-            const angle = Math.atan2(dy, dx);
-            
-            const w = this.tileSize * 1.2;
-            const h = this.tileSize * 1.3;
-            
-            this.ctx.save();
-            this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
-            this.ctx.rotate(angle);
-            
-            // Draw joint
-            this.ctx.fillStyle = '#d47b7b';
-            this.ctx.beginPath();
-            this.ctx.arc(0, 0, this.tileSize * 0.45, 0, Math.PI * 2);
-            this.ctx.fill();
-            
-            this.ctx.drawImage(corpoImg, -w / 2, -h / 2, w, h);
-            this.ctx.restore();
+             // Body
+             const prev = this.snake.body[i - 1]; // towards head
+             const next = this.snake.body[i + 1]; // towards tail
+             
+             let dxPrev = prev.x - segment.x;
+             let dyPrev = prev.y - segment.y;
+             let dxNext = next.x - segment.x;
+             let dyNext = next.y - segment.y;
+             
+             if (Math.abs(dxPrev) > 1) dxPrev = dxPrev > 0 ? -1 : 1;
+             if (Math.abs(dyPrev) > 1) dyPrev = dyPrev > 0 ? -1 : 1;
+             if (Math.abs(dxNext) > 1) dxNext = dxNext > 0 ? -1 : 1;
+             if (Math.abs(dyNext) > 1) dyNext = dyNext > 0 ? -1 : 1;
+
+             if (dxPrev === 0 && dxNext === 0) {
+                tileName = 'bodyVert';
+             } else if (dyPrev === 0 && dyNext === 0) {
+                tileName = 'bodyHoriz';
+             } else {
+                if ((dxPrev === -1 && dyNext === -1) || (dxNext === -1 && dyPrev === -1)) tileName = 'cornerTopLeft';
+                else if ((dxPrev === 1 && dyNext === -1) || (dxNext === 1 && dyPrev === -1)) tileName = 'cornerTopRight';
+                else if ((dxPrev === -1 && dyNext === 1) || (dxNext === -1 && dyPrev === 1)) tileName = 'cornerBottomLeft';
+                else if ((dxPrev === 1 && dyNext === 1) || (dxNext === 1 && dyPrev === 1)) tileName = 'cornerBottomRight';
+             }
           }
+          
+          const coords = TILES[tileName];
+          this.ctx.drawImage(
+            tilemapImg, 
+            coords[0] * TILE_SIZE, coords[1] * TILE_SIZE, TILE_SIZE, TILE_SIZE, 
+            px, py, this.tileSize, this.tileSize
+          );
         }
       } else {
         // Fallback Cylindrical Path rendering
