@@ -5,7 +5,8 @@ const ASSET_PATHS = {
   pedra: '../../assets/img/pedra.png',
   folha: '../../assets/img/folha.png',
   cabeca: '../../assets/img/cabeca.png',
-  corpo: '../../assets/img/corpo.png'
+  corpo: '../../assets/img/corpo.png',
+  grama: '../../assets/img/grama.png'
 };
 
 const loadedAssets = {};

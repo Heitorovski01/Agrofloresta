@@ -1,6 +1,7 @@
 export class Food {
-  constructor(gridSize) {
-    this.gridSize = gridSize;
+  constructor(gridCols, gridRows) {
+    this.gridCols = gridCols;
+    this.gridRows = gridRows;
     this.position = { x: 0, y: 0 };
     this.types = ['buriti', 'pequi', 'jatoba'];
     this.type = this.types[0];
@@ -13,8 +14,8 @@ export class Food {
 
     while (isOnSnake) {
       newPos = {
-        x: Math.floor(Math.random() * this.gridSize),
-        y: Math.floor(Math.random() * this.gridSize)
+        x: Math.floor(Math.random() * this.gridCols),
+        y: Math.floor(Math.random() * this.gridRows)
       };
 
       isOnSnake = snakeBody.some(

@@ -7,23 +7,24 @@ export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.gridSize = 20;
+    this.gridCols = 15;
+    this.gridRows = 17;
     this.CELL_SIZE = 32;
     this.tileSize = this.CELL_SIZE;
     
     // High DPI Canvas Scaling
     const dpr = window.devicePixelRatio || 1;
-    this.canvas.style.width = `${this.gridSize * this.CELL_SIZE}px`;
-    this.canvas.style.height = `${this.gridSize * this.CELL_SIZE}px`;
-    this.canvas.width = this.gridSize * this.CELL_SIZE * dpr;
-    this.canvas.height = this.gridSize * this.CELL_SIZE * dpr;
+    this.canvas.style.width = `${this.gridCols * this.CELL_SIZE}px`;
+    this.canvas.style.height = `${this.gridRows * this.CELL_SIZE}px`;
+    this.canvas.width = this.gridCols * this.CELL_SIZE * dpr;
+    this.canvas.height = this.gridRows * this.CELL_SIZE * dpr;
     this.ctx.scale(dpr, dpr);
     
-    this.logicalWidth = this.gridSize * this.tileSize;
-    this.logicalHeight = this.gridSize * this.tileSize;
+    this.logicalWidth = this.gridCols * this.tileSize;
+    this.logicalHeight = this.gridRows * this.tileSize;
 
     this.snake = new Snake(10, 10);
-    this.food = new Food(this.gridSize);
+    this.food = new Food(this.gridCols, this.gridRows);
 
     this.isRunning = false;
     this.isGameOver = false;
@@ -79,7 +80,7 @@ export class Game {
   restart() {
     this.stop();
     this.snake = new Snake(10, 10);
-    this.food = new Food(this.gridSize);
+    this.food = new Food(this.gridCols, this.gridRows);
     this.isGameOver = false;
     this.score = 0;
     this.updateScoreDisplay();
@@ -124,7 +125,7 @@ export class Game {
     const head = this.snake.body[0];
 
     // Wall collision
-    if (head.x < 0 || head.x >= this.gridSize || head.y < 0 || head.y >= this.gridSize) {
+    if (head.x < 0 || head.x >= this.gridCols || head.y < 0 || head.y >= this.gridRows) {
       this.triggerGameOver();
       return;
     }
@@ -236,13 +237,20 @@ export class Game {
     // Clear canvas
     this.ctx.clearRect(0, 0, this.logicalWidth, this.logicalHeight);
 
-    // Draw Background Grid (Solo da Roça)
-    const colorA = '#8B5A2B'; // Darker soil
-    const colorB = '#9C6631'; // Lighter soil
-    for (let row = 0; row < this.gridSize; row++) {
-      for (let col = 0; col < this.gridSize; col++) {
-        this.ctx.fillStyle = (row + col) % 2 === 0 ? colorA : colorB;
-        this.ctx.fillRect(col * this.tileSize, row * this.tileSize, this.tileSize, this.tileSize);
+    // Draw Background Grid
+    const gramaImg = getAsset('grama');
+    if (gramaImg) {
+      const pattern = this.ctx.createPattern(gramaImg, 'repeat');
+      this.ctx.fillStyle = pattern;
+      this.ctx.fillRect(0, 0, this.logicalWidth, this.logicalHeight);
+    } else {
+      const colorA = '#8d9e5f'; // Cerrado grass 1
+      const colorB = '#7a8c4c'; // Cerrado grass 2
+      for (let row = 0; row < this.gridRows; row++) {
+        for (let col = 0; col < this.gridCols; col++) {
+          this.ctx.fillStyle = (row + col) % 2 === 0 ? colorA : colorB;
+          this.ctx.fillRect(col * this.tileSize, row * this.tileSize, this.tileSize, this.tileSize);
+        }
       }
     }
 
