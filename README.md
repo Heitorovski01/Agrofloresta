@@ -48,7 +48,6 @@ agrofloresta/
 | Nome | Status | Pasta |
 | :--- | :--- | :--- |
 | Jogo 1 | 🚧 Em desenvolvimento | `jogos/jogo1/` |
-| Jogo 2 | 🚧 Em desenvolvimento | `jogos/jogo2/` |
 
 *Os nomes dos jogos serão atualizados em breve.*
 
