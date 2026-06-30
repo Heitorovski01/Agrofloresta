@@ -24,9 +24,6 @@ export class Game {
 
     this.snake = new Snake(10, 10);
     this.food = new Food(this.gridSize);
-    this.obstacles = [];
-    this.decorations = [];
-    this.initEnvironment();
 
     this.isRunning = false;
     this.isGameOver = false;
@@ -79,54 +76,10 @@ export class Game {
     }
   }
 
-  initEnvironment() {
-    this.obstacles = [];
-    this.decorations = [];
-    const numObstacles = 7;
-    const numDecorations = 10;
-    
-    const isOccupied = (x, y) => {
-      // Check snake body
-      for (let s of this.snake.body) {
-        if (s.x === x && s.y === y) return true;
-      }
-      // Check food
-      if (this.food.position.x === x && this.food.position.y === y) return true;
-      // Check obstacles
-      for (let o of this.obstacles) {
-        if (o.x === x && o.y === y) return true;
-      }
-      // Check decorations
-      for (let d of this.decorations) {
-        if (d.x === x && d.y === y) return true;
-      }
-      return false;
-    };
-    
-    const getRandomPos = () => {
-      let x, y;
-      do {
-        x = Math.floor(Math.random() * this.gridSize);
-        y = Math.floor(Math.random() * this.gridSize);
-      } while (isOccupied(x, y));
-      return { x, y };
-    };
-
-    for (let i = 0; i < numObstacles; i++) {
-      this.obstacles.push(getRandomPos());
-    }
-    for (let i = 0; i < numDecorations; i++) {
-      const pos = getRandomPos();
-      pos.type = Math.random() > 0.5 ? 'leaf' : 'dirt';
-      this.decorations.push(pos);
-    }
-  }
-
   restart() {
     this.stop();
     this.snake = new Snake(10, 10);
     this.food = new Food(this.gridSize);
-    this.initEnvironment();
     this.isGameOver = false;
     this.score = 0;
     this.updateScoreDisplay();
@@ -184,31 +137,11 @@ export class Game {
       }
     }
 
-    // Obstacle collision
-    for (let obs of this.obstacles) {
-      if (head.x === obs.x && head.y === obs.y) {
-        this.triggerGameOver();
-        return;
-      }
-    }
-
     // Eating food
     if (head.x === this.food.position.x && head.y === this.food.position.y) {
       this.score += 1;
       this.snake.grow();
-      
-      // Need to avoid spawning food on obstacles too
-      // Overriding food.spawn to use game logic would be better, but we can just spawn and re-spawn if occupied.
-      // Wait, food.spawn in food.js only knows about the snake array. 
-      // We will loop spawn until it's on a free spot.
-      let valid = false;
-      while (!valid) {
-        this.food.spawn(this.snake.body);
-        valid = true;
-        for (let obs of this.obstacles) {
-          if (this.food.position.x === obs.x && this.food.position.y === obs.y) valid = false;
-        }
-      }
+      this.food.spawn(this.snake.body);
       this.updateScoreDisplay();
     }
   }
@@ -312,58 +245,6 @@ export class Game {
         this.ctx.fillRect(col * this.tileSize, row * this.tileSize, this.tileSize, this.tileSize);
       }
     }
-
-    // Draw Decorations
-    this.decorations.forEach(dec => {
-      const px = dec.x * this.tileSize;
-      const py = dec.y * this.tileSize;
-      if (dec.type === 'leaf') {
-         const folhaImg = getAsset('folha');
-         if (folhaImg) {
-           this.ctx.drawImage(folhaImg, px, py, this.tileSize, this.tileSize);
-         } else {
-           const cx = px + this.tileSize / 2;
-           const cy = py + this.tileSize / 2;
-           this.ctx.fillStyle = '#6b8e23'; // Faded green
-           this.ctx.beginPath();
-           this.ctx.ellipse(cx, cy, this.tileSize*0.3, this.tileSize*0.15, Math.PI / 4, 0, Math.PI * 2);
-           this.ctx.fill();
-         }
-      } else {
-         const cx = px + this.tileSize / 2;
-         const cy = py + this.tileSize / 2;
-         this.ctx.fillStyle = '#654321'; // Dirt
-         this.ctx.beginPath();
-         this.ctx.arc(cx, cy, this.tileSize*0.25, 0, Math.PI * 2);
-         this.ctx.fill();
-      }
-    });
-
-    // Draw Obstacles (e.g. Rocks)
-    const pedraImg = getAsset('pedra');
-    this.obstacles.forEach(obs => {
-      const px = obs.x * this.tileSize;
-      const py = obs.y * this.tileSize;
-      if (pedraImg) {
-        this.ctx.drawImage(pedraImg, px, py, this.tileSize, this.tileSize);
-      } else {
-        const cx = px + this.tileSize / 2;
-        const cy = py + this.tileSize / 2;
-        this.ctx.fillStyle = '#696969'; // Dim Gray
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
-        this.ctx.lineTo(cx + this.tileSize * 0.4, cy + this.tileSize * 0.3);
-        this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
-        this.ctx.fill();
-        
-        this.ctx.fillStyle = '#808080'; // Gray highlight
-        this.ctx.beginPath();
-        this.ctx.moveTo(cx, cy - this.tileSize * 0.3);
-        this.ctx.lineTo(cx, cy + this.tileSize * 0.3);
-        this.ctx.lineTo(cx - this.tileSize * 0.4, cy + this.tileSize * 0.3);
-        this.ctx.fill();
-      }
-    });
 
     // Draw food based on type
     const pxFood = this.food.position.x * this.tileSize;

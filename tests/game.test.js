@@ -54,8 +54,6 @@ describe('Game Loop and Rendering', () => {
     expect(game.gridSize).toBe(20);
     expect(game.tileSize).toBe(32);
     expect(game.snake).toBeDefined();
-    expect(game.obstacles.length).toBe(7);
-    expect(game.decorations.length).toBe(10);
     expect(game.isRunning).toBe(false);
     expect(mockCtx.fillText).toHaveBeenCalledWith('Pressione Iniciar', 320, 320);
   });
@@ -128,34 +126,6 @@ describe('Game Loop and Rendering', () => {
     ];
     game.update();
     expect(game.isGameOver).toBe(true);
-  });
-
-  it('should handle obstacle collision (Game Over)', () => {
-    game.obstacles = [{ x: 15, y: 15 }];
-    game.snake.body[0] = { x: 15, y: 15 };
-    game.update();
-    expect(game.isGameOver).toBe(true);
-  });
-
-  it('should generate environment without overlapping with snake or food', () => {
-    // Re-init explicitly to check conditions
-    game.snake.body = [{ x: 5, y: 5 }, { x: 6, y: 5 }];
-    game.food.position = { x: 10, y: 10 };
-    game.initEnvironment();
-    
-    const isOverlapping = (item) => {
-      if (item.x === 10 && item.y === 10) return true; // food
-      if (item.x === 5 && item.y === 5) return true; // snake
-      if (item.x === 6 && item.y === 5) return true; // snake
-      return false;
-    };
-    
-    for (let obs of game.obstacles) {
-      expect(isOverlapping(obs)).toBe(false);
-    }
-    for (let dec of game.decorations) {
-      expect(isOverlapping(dec)).toBe(false);
-    }
   });
 
   it('should eat food, increase score, and grow', () => {
