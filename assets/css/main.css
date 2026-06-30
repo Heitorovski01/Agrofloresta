@@ -186,14 +186,18 @@ img, svg {
     color: var(--cream);
     position: relative;
     overflow: hidden;
-    padding: 6rem 0;
+    padding: 8rem 0;
     text-align: center;
-    /* Pixel pattern background */
+    
+    /* Imagem de fundo com overlay semitransparente para legibilidade.
+       NOTA: A imagem "hero-bg.jpg" deve ser colocada em "assets/img/". */
     background-image: 
-        radial-gradient(var(--green-mid) 2px, transparent 2px),
-        radial-gradient(var(--green-mid) 2px, transparent 2px);
-    background-size: 32px 32px;
-    background-position: 0 0, 16px 16px;
+        linear-gradient(rgba(26, 58, 26, 0.8), rgba(26, 58, 26, 0.8)), 
+        url('../img/hero-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
 
 .hero-content {
@@ -220,7 +224,7 @@ img, svg {
 .hero-title {
     font-size: clamp(3rem, 8vw, 5rem);
     color: var(--yellow);
-    text-shadow: 4px 4px 0 var(--brown);
+    text-shadow: 4px 4px 0 var(--brown), 0 0 15px rgba(0, 0, 0, 0.6);
     margin-bottom: 0.5rem;
 }
 
@@ -228,8 +232,9 @@ img, svg {
     font-size: clamp(1.1rem, 3vw, 1.5rem);
     max-width: 800px;
     margin: 0 auto;
-    opacity: 0.9;
+    opacity: 1;
     font-weight: 500;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .hero-ctas {
