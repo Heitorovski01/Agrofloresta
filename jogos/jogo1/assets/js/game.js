@@ -342,16 +342,19 @@ export class Game {
             this.ctx.drawImage(cabecaImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
             this.ctx.restore();
           } else {
-            // Draw Body with rotation
+            // Draw Body with rotation and overlap
             const prev = this.snake.body[i - 1];
             const dx = prev.x - segment.x;
             const dy = prev.y - segment.y;
             const angle = Math.atan2(dy, dx);
             
+            const w = this.tileSize * 1.2;
+            const h = this.tileSize * 1.3;
+            
             this.ctx.save();
             this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
             this.ctx.rotate(angle);
-            this.ctx.drawImage(corpoImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
+            this.ctx.drawImage(corpoImg, -w / 2, -h / 2, w, h);
             this.ctx.restore();
           }
         }
