@@ -188,16 +188,26 @@ img, svg {
     overflow: hidden;
     padding: 8rem 0;
     text-align: center;
-    
-    /* Imagem de fundo com overlay semitransparente para legibilidade.
-       NOTA: A imagem "hero-bg.jpg" deve ser colocada em "assets/img/". */
-    background-image: 
-        linear-gradient(rgba(26, 58, 26, 0.8), rgba(26, 58, 26, 0.8)), 
-        url('../img/hero-bg.jpg');
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background-image: url('../img/hero-bg.jpg');
     background-size: cover;
     background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+
+    /* O Desfoque e escala extra para sumir com as bordas vazadas do blur */
+    filter: blur(5px);
+    transform: scale(1.02);
+
+    /* O Overlay escurecido para legibilidade */
+    background-color: rgba(10, 30, 10, 0.8);
+    background-blend-mode: darken;
+
+    z-index: -1; /* Garante que fique atrás do conteúdo */
 }
 
 .hero-content {
