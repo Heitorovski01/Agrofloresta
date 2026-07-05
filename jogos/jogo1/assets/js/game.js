@@ -77,7 +77,7 @@ export class Game {
       if (saved) {
         this.highScore = parseInt(saved, 10);
       }
-    } catch (e) {
+    } catch {
       console.warn("localStorage not available");
     }
   }
@@ -179,7 +179,7 @@ export class Game {
       this.highScore = this.score;
       try {
         localStorage.setItem('agrofloresta_snake_highscore', this.highScore.toString());
-      } catch (e) {
+      } catch {
         console.warn("localStorage not available");
       }
     }
@@ -291,7 +291,7 @@ export class Game {
       const radius = this.tileSize / 2 - 2;
       
       switch (this.food.type) {
-        case 'pequi':
+        case 'pequi': {
           const gradPequi = this.ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
           gradPequi.addColorStop(0, '#FFF59D');
           gradPequi.addColorStop(0.5, '#FFC107');
@@ -301,7 +301,8 @@ export class Game {
           this.ctx.fillStyle = gradPequi;
           this.ctx.fill();
           break;
-        case 'buriti':
+        }
+        case 'buriti': {
           this.ctx.beginPath();
           this.ctx.ellipse(cx, cy, radius * 0.9, radius * 1.1, 0, 0, Math.PI * 2); 
           const gradBuriti = this.ctx.createRadialGradient(cx, cy, radius*0.2, cx, cy, radius*1.2);
@@ -316,6 +317,7 @@ export class Game {
           this.ctx.moveTo(cx + radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx - radius*0.5, cy + radius*0.6);
           this.ctx.stroke();
           break;
+        }
         case 'jatoba':
         case 'baru':
           this.ctx.beginPath();
@@ -339,123 +341,155 @@ export class Game {
 
     // Draw snake body
     if (this.snake.body.length > 0) {
-      const offset = this.CELL_SIZE / 2;
-      const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
-
-      // Draw body from index 1 to tail
-      if (this.snake.body.length > 1) {
-        this.ctx.beginPath();
-        this.ctx.strokeStyle = '#d68a7a';
-        this.ctx.lineWidth = this.CELL_SIZE * 0.9;
-        this.ctx.lineCap = 'round';
-        this.ctx.lineJoin = 'round';
-
-        let p1X = this.previousSnake && 1 < this.previousSnake.length ? this.previousSnake[1].x : this.snake.body[1].x;
-        let p1Y = this.previousSnake && 1 < this.previousSnake.length ? this.previousSnake[1].y : this.snake.body[1].y;
-        let c1X = this.snake.body[1].x;
-        let c1Y = this.snake.body[1].y;
-        let v1X = lerp(p1X, c1X, progress) * this.CELL_SIZE + offset;
-        let v1Y = lerp(p1Y, c1Y, progress) * this.CELL_SIZE + offset;
-
-        this.ctx.moveTo(v1X, v1Y);
-        this.ctx.lineTo(v1X, v1Y); // dot for length 2 edge case
-
-        for (let i = 2; i < this.snake.body.length; i++) {
-          let prevSegX = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].x : this.snake.body[i].x;
-          let prevSegY = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].y : this.snake.body[i].y;
+      const cabecaImg = getAsset('cabeca');
+      const corpoImg = getAsset('corpo');
+      
+      if (cabecaImg && corpoImg) {
+        // Sprite rendering
+        for (let i = this.snake.body.length - 1; i >= 0; i--) {
+          const segment = this.snake.body[i];
+          const px = segment.x * this.tileSize;
+          const py = segment.y * this.tileSize;
           
-          let cX = this.snake.body[i].x;
-          let cY = this.snake.body[i].y;
-          
-          let vX = lerp(prevSegX, cX, progress) * this.CELL_SIZE + offset;
-          let vY = lerp(prevSegY, cY, progress) * this.CELL_SIZE + offset;
-
-          this.ctx.lineTo(vX, vY);
+          if (i === 0) {
+            // Draw Head with rotation
+            const dirX = this.snake.direction.x || 1; // fallback to 1 if start 0,0
+            const dirY = this.snake.direction.y || 0;
+            // For a sprite that faces right by default:
+            const angle = Math.atan2(dirY, dirX);
+            // If the head sprite is drawn facing UP, we need angle = Math.atan2(dirY, dirX) + Math.PI/2.
+            // Assuming it faces Right.
+            
+            this.ctx.save();
+            this.ctx.translate(px + this.tileSize / 2, py + this.tileSize / 2);
+            this.ctx.rotate(angle);
+            this.ctx.drawImage(cabecaImg, -this.tileSize / 2, -this.tileSize / 2, this.tileSize, this.tileSize);
+            this.ctx.restore();
+          } else {
+            // Draw Body
+            this.ctx.drawImage(corpoImg, px, py, this.tileSize, this.tileSize);
+          }
         }
-        this.ctx.stroke();
-      }
-
-      // Draw digesting lumps
-      if (this.digesting) {
-        for (let item of this.digesting) {
-          let i = item.index;
-          if (i >= this.snake.body.length) continue;
-          
-          let pX = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].x : this.snake.body[i].x;
-          let pY = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].y : this.snake.body[i].y;
-          let cX = this.snake.body[i].x;
-          let cY = this.snake.body[i].y;
-          let vX = lerp(pX, cX, progress) * this.CELL_SIZE + offset;
-          let vY = lerp(pY, cY, progress) * this.CELL_SIZE + offset;
-
-          this.ctx.beginPath();
-          this.ctx.arc(vX, vY, this.CELL_SIZE * 0.6, 0, Math.PI * 2);
-          
-          let lumpColor = '#e39988'; // Default rosy mix
-          if (item.type === 'pequi') lumpColor = '#e6c06a'; // Yellowish pink
-          else if (item.type === 'buriti') lumpColor = '#c46666'; // Reddish pink
-          else if (item.type === 'jatoba' || item.type === 'baru') lumpColor = '#a87a68'; // Brownish pink
-          
-          this.ctx.fillStyle = lumpColor;
-          this.ctx.fill();
-        }
-      }
-
-      // Draw Head
-      let headPrevX = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].x : this.snake.body[0].x;
-      let headPrevY = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].y : this.snake.body[0].y;
-      let headCurrX = this.snake.body[0].x;
-      let headCurrY = this.snake.body[0].y;
-
-      let headX = lerp(headPrevX, headCurrX, progress) * this.CELL_SIZE + offset;
-      let headY = lerp(headPrevY, headCurrY, progress) * this.CELL_SIZE + offset;
-
-      let fX = this.food.position.x * this.CELL_SIZE + offset;
-      let fY = this.food.position.y * this.CELL_SIZE + offset;
-      
-      let dist = Math.hypot(fX - headX, fY - headY);
-      
-      this.ctx.beginPath();
-      this.ctx.fillStyle = '#d68a7a';
-      let headRadius = this.CELL_SIZE * 0.45;
-      
-      let angle = 0;
-      if (dist < this.CELL_SIZE * 2) {
-         angle = Math.atan2(fY - headY, fX - headX);
-         this.ctx.arc(headX, headY, headRadius, angle + 0.4, angle - 0.4, false);
-         this.ctx.lineTo(headX, headY);
       } else {
-         const dirX = this.snake.direction.x;
-         const dirY = this.snake.direction.y;
-         if (dirX === 1) angle = 0;
-         else if (dirX === -1) angle = Math.PI;
-         else if (dirY === 1) angle = Math.PI / 2;
-         else if (dirY === -1) angle = -Math.PI / 2;
-         
-         this.ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
+        // Fallback Cylindrical Path rendering
+        const offset = this.CELL_SIZE / 2;
+        const lerp = (start, end, amt) => (1 - amt) * start + amt * end;
+
+        // Draw body from index 1 to tail
+        if (this.snake.body.length > 1) {
+          this.ctx.beginPath();
+          this.ctx.strokeStyle = '#d68a7a';
+          this.ctx.lineWidth = this.CELL_SIZE * 0.9;
+          this.ctx.lineCap = 'round';
+          this.ctx.lineJoin = 'round';
+
+          let p1X = this.previousSnake && 1 < this.previousSnake.length ? this.previousSnake[1].x : this.snake.body[1].x;
+          let p1Y = this.previousSnake && 1 < this.previousSnake.length ? this.previousSnake[1].y : this.snake.body[1].y;
+          let c1X = this.snake.body[1].x;
+          let c1Y = this.snake.body[1].y;
+          let v1X = lerp(p1X, c1X, progress) * this.CELL_SIZE + offset;
+          let v1Y = lerp(p1Y, c1Y, progress) * this.CELL_SIZE + offset;
+
+          this.ctx.moveTo(v1X, v1Y);
+          this.ctx.lineTo(v1X, v1Y); // dot for length 2 edge case
+
+          for (let i = 2; i < this.snake.body.length; i++) {
+            let prevSegX = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].x : this.snake.body[i].x;
+            let prevSegY = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].y : this.snake.body[i].y;
+            
+            let cX = this.snake.body[i].x;
+            let cY = this.snake.body[i].y;
+            
+            let vX = lerp(prevSegX, cX, progress) * this.CELL_SIZE + offset;
+            let vY = lerp(prevSegY, cY, progress) * this.CELL_SIZE + offset;
+
+            this.ctx.lineTo(vX, vY);
+          }
+          this.ctx.stroke();
+        }
+
+        // Draw digesting lumps
+        if (this.digesting) {
+          for (let item of this.digesting) {
+            let i = item.index;
+            if (i >= this.snake.body.length) continue;
+            
+            let pX = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].x : this.snake.body[i].x;
+            let pY = this.previousSnake && i < this.previousSnake.length ? this.previousSnake[i].y : this.snake.body[i].y;
+            let cX = this.snake.body[i].x;
+            let cY = this.snake.body[i].y;
+            let vX = lerp(pX, cX, progress) * this.CELL_SIZE + offset;
+            let vY = lerp(pY, cY, progress) * this.CELL_SIZE + offset;
+
+            this.ctx.beginPath();
+            this.ctx.arc(vX, vY, this.CELL_SIZE * 0.6, 0, Math.PI * 2);
+            
+            let lumpColor = '#e39988'; // Default rosy mix
+            if (item.type === 'pequi') lumpColor = '#e6c06a'; // Yellowish pink
+            else if (item.type === 'buriti') lumpColor = '#c46666'; // Reddish pink
+            else if (item.type === 'jatoba' || item.type === 'baru') lumpColor = '#a87a68'; // Brownish pink
+            
+            this.ctx.fillStyle = lumpColor;
+            this.ctx.fill();
+          }
+        }
+
+        // Draw Head
+        let headPrevX = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].x : this.snake.body[0].x;
+        let headPrevY = this.previousSnake && this.previousSnake[0] ? this.previousSnake[0].y : this.snake.body[0].y;
+        let headCurrX = this.snake.body[0].x;
+        let headCurrY = this.snake.body[0].y;
+
+        let headX = lerp(headPrevX, headCurrX, progress) * this.CELL_SIZE + offset;
+        let headY = lerp(headPrevY, headCurrY, progress) * this.CELL_SIZE + offset;
+
+        let fX = this.food.position.x * this.CELL_SIZE + offset;
+        let fY = this.food.position.y * this.CELL_SIZE + offset;
+        
+        let dist = Math.hypot(fX - headX, fY - headY);
+        
+        this.ctx.beginPath();
+        this.ctx.fillStyle = '#d68a7a';
+        let headRadius = this.CELL_SIZE * 0.45;
+        
+        let angle = 0;
+        if (dist < this.CELL_SIZE * 2) {
+           angle = Math.atan2(fY - headY, fX - headX);
+           this.ctx.arc(headX, headY, headRadius, angle + 0.4, angle - 0.4, false);
+           this.ctx.lineTo(headX, headY);
+        } else {
+           const dirX = this.snake.direction.x;
+           const dirY = this.snake.direction.y;
+           if (dirX === 1) angle = 0;
+           else if (dirX === -1) angle = Math.PI;
+           else if (dirY === 1) angle = Math.PI / 2;
+           else if (dirY === -1) angle = -Math.PI / 2;
+           
+           this.ctx.arc(headX, headY, headRadius, 0, Math.PI * 2);
+        }
+        this.ctx.fill();
+
+        // Draw eyes relative to angle
+        const eyeRadius = this.CELL_SIZE * 0.1;
+        const eyeOffsetForward = this.CELL_SIZE * 0.15;
+        const eyeOffsetSide = this.CELL_SIZE * 0.25;
+
+        let eye1X = headX + Math.cos(angle) * eyeOffsetForward - Math.sin(angle) * eyeOffsetSide;
+        let eye1Y = headY + Math.sin(angle) * eyeOffsetForward + Math.cos(angle) * eyeOffsetSide;
+
+        let eye2X = headX + Math.cos(angle) * eyeOffsetForward + Math.sin(angle) * eyeOffsetSide;
+        let eye2Y = headY + Math.sin(angle) * eyeOffsetForward - Math.cos(angle) * eyeOffsetSide;
+
+        this.ctx.fillStyle = '#000';
+        this.ctx.beginPath();
+        this.ctx.arc(eye1X, eye1Y, eyeRadius, 0, Math.PI * 2);
+        this.ctx.fill();
+        
+        this.ctx.beginPath();
+        this.ctx.arc(eye2X, eye2Y, eyeRadius, 0, Math.PI * 2);
+        this.ctx.fill();
       }
-      this.ctx.fill();
-
-      // Draw eyes relative to angle
-      const eyeRadius = this.CELL_SIZE * 0.1;
-      const eyeOffsetForward = this.CELL_SIZE * 0.15;
-      const eyeOffsetSide = this.CELL_SIZE * 0.25;
-
-      let eye1X = headX + Math.cos(angle) * eyeOffsetForward - Math.sin(angle) * eyeOffsetSide;
-      let eye1Y = headY + Math.sin(angle) * eyeOffsetForward + Math.cos(angle) * eyeOffsetSide;
-
-      let eye2X = headX + Math.cos(angle) * eyeOffsetForward + Math.sin(angle) * eyeOffsetSide;
-      let eye2Y = headY + Math.sin(angle) * eyeOffsetForward - Math.cos(angle) * eyeOffsetSide;
-
-      this.ctx.fillStyle = '#000';
-      this.ctx.beginPath();
-      this.ctx.arc(eye1X, eye1Y, eyeRadius, 0, Math.PI * 2);
-      this.ctx.fill();
-      
-      this.ctx.beginPath();
-      this.ctx.arc(eye2X, eye2Y, eyeRadius, 0, Math.PI * 2);
-      this.ctx.fill();
-    }
+    }}
   }
 
   loop(timestamp) {
