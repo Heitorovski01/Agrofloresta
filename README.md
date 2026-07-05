@@ -44,15 +44,18 @@ agrofloresta/
 ## Jogos 🎮
 | Nome | Status | Pasta |
 | :--- | :--- | :--- |
-| Jogo 1 | 🚧 Em desenvolvimento | `jogos/jogo1/` |
+| Semeador | ✅ Concluído | `jogos/jogo1/` |
 
-*Os nomes dos jogos serão atualizados em breve.*
+*O minigame "Semeador" permite controlar uma minhoca que coleta sementes nativas do Cerrado, contando com ranking local de pontuação!*
 
 ## Equipe 👥
 Projeto desenvolvido por estudantes, professores e comunidade em parceria com UnB e CEL.
 
-<!-- Adicione os membros da equipe aqui -->
-- Nome do membro — Papel
+- **Tatiana** — Professora do Projeto
+- **Danielly Vitória** — Estudante de Geografia
+- **Ana Sofia** — Estudante de Ciências Ambientais
+- **Cristiane Lima** — Estudante de Geografia
+- **Heitor Pinheiro** — Estudante de Engenharia de Software
 
 ## Contribuindo 🤝
 1. Faça um **Fork** do projeto.
@@ -74,6 +77,6 @@ Projeto desenvolvido por estudantes, professores e comunidade em parceria com Un
 Distribuído sob a licença MIT. Veja `LICENSE` para mais informações.
 
 ## Contato ✉️
-- Instagram: [https://www.instagram.com/agroflor3sta/](https://www.instagram.com/agroflor3sta/)
-- Email: *************
+- Instagram: [@agroflor3sta](https://www.instagram.com/agroflor3sta/)
+- Email: agroflor3sta@gmail.com
 
