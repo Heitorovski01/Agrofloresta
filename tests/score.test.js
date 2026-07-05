@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { getTop3, checkIfTop3, saveToLeaderboard } from '../jogos/jogo1/assets/js/score.js';
 
 // Mock localStorage

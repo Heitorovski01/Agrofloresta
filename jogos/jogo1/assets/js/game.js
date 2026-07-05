@@ -74,7 +74,7 @@ export class Game {
       if (saved) {
         this.highScore = parseInt(saved, 10);
       }
-    } catch (e) {
+    } catch {
       console.warn("localStorage not available");
     }
   }
@@ -221,7 +221,7 @@ export class Game {
       this.highScore = this.score;
       try {
         localStorage.setItem('agrofloresta_snake_highscore', this.highScore.toString());
-      } catch (e) {
+      } catch {
         console.warn("localStorage not available");
       }
     }
@@ -378,7 +378,7 @@ export class Game {
       const radius = this.tileSize / 2 - 2;
       
       switch (this.food.type) {
-        case 'pequi':
+        case 'pequi': {
           const gradPequi = this.ctx.createRadialGradient(cx - radius*0.3, cy - radius*0.3, radius*0.1, cx, cy, radius);
           gradPequi.addColorStop(0, '#FFF59D');
           gradPequi.addColorStop(0.5, '#FFC107');
@@ -388,7 +388,8 @@ export class Game {
           this.ctx.fillStyle = gradPequi;
           this.ctx.fill();
           break;
-        case 'buriti':
+        }
+        case 'buriti': {
           this.ctx.beginPath();
           this.ctx.ellipse(cx, cy, radius * 0.9, radius * 1.1, 0, 0, Math.PI * 2); 
           const gradBuriti = this.ctx.createRadialGradient(cx, cy, radius*0.2, cx, cy, radius*1.2);
@@ -403,6 +404,7 @@ export class Game {
           this.ctx.moveTo(cx + radius*0.5, cy - radius*0.4); this.ctx.lineTo(cx - radius*0.5, cy + radius*0.6);
           this.ctx.stroke();
           break;
+        }
         case 'jatoba':
         case 'baru':
           this.ctx.beginPath();
@@ -438,12 +440,10 @@ export class Game {
           
           if (i === 0) {
             // Draw Head with rotation
-            let angle = 0;
-            // Default direction facing right.
             const dirX = this.snake.direction.x || 1; // fallback to 1 if start 0,0
             const dirY = this.snake.direction.y || 0;
             // For a sprite that faces right by default:
-            angle = Math.atan2(dirY, dirX);
+            const angle = Math.atan2(dirY, dirX);
             // If the head sprite is drawn facing UP, we need angle = Math.atan2(dirY, dirX) + Math.PI/2.
             // Assuming it faces Right.
             
