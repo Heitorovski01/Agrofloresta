@@ -391,6 +391,13 @@ img, svg {
     color: var(--green-dark);
 }
 
+.team-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
 .team-name {
     font-size: 1.5rem;
     margin-bottom: 0.5rem;
@@ -439,10 +446,29 @@ img, svg {
     align-items: center;
     justify-content: center;
     transition: transform 0.2s;
+    position: relative;
+    z-index: 2;
 }
 
 .reel-item:hover .reel-play {
     transform: scale(1.1);
+}
+
+.reel-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.reel-item:hover .reel-bg {
+    opacity: 0.85;
+    transform: scale(1.05);
 }
 
 .reel-caption {
@@ -455,6 +481,7 @@ img, svg {
     font-family: var(--font-headings);
     font-size: 1.25rem;
     text-align: center;
+    z-index: 2;
 }
 
 /* Contato */
