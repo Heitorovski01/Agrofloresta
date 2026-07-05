@@ -5,7 +5,7 @@ export function getTop3() {
     if (saved) {
       return JSON.parse(saved);
     }
-  } catch (e) {
+  } catch {
     console.warn("localStorage not available");
   }
   return [];
@@ -20,19 +20,18 @@ export function checkIfTop3(score) {
 
 export function saveToLeaderboard(name, score) {
   const leaderboardKey = 'agro_leaderboard';
-  let top3 = getTop3();
+  const top3 = getTop3();
   
-  top3.push({ name: name, score: score });
+  top3.push({ name, score });
   top3.sort((a, b) => b.score - a.score);
   
-  // Keep only Top 3
   if (top3.length > 3) {
-    top3 = top3.slice(0, 3);
+    top3.pop();
   }
   
   try {
     localStorage.setItem(leaderboardKey, JSON.stringify(top3));
-  } catch (e) {
+  } catch {
     console.warn("localStorage not available");
   }
 }
