@@ -1,5 +1,5 @@
-const { test, expect } = require('@playwright/test');
-const { AxeBuilder } = require('@axe-core/playwright');
+import { test, expect } from '@playwright/test';
+import { AxeBuilder } from '@axe-core/playwright';
 
 test.describe('AgroFloresta na Escola - Homepage', () => {
   

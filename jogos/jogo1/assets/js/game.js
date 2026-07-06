@@ -489,7 +489,7 @@ export class Game {
         this.ctx.arc(eye2X, eye2Y, eyeRadius, 0, Math.PI * 2);
         this.ctx.fill();
       }
-    }}
+    }
   }
 
   loop(timestamp) {
