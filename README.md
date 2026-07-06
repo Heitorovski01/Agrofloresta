@@ -1,13 +1,18 @@
-# AgroFloresta na Escola
-*Vivências para o Amanhã*
+<div align="center">
+  <img src="assets/img/coruja-mascote.png" alt="Coruja Mascote" width="200"/>
+  <h1>AgroFloresta na Escola</h1>
+  <p><em>Vivências para o Amanhã</em></p>
+  
+  ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+  ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+  ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+  ![Playwright](https://img.shields.io/badge/-Playwright-2EAD33?style=flat&logo=playwright&logoColor=white)
+  ![Vitest](https://img.shields.io/badge/-Vitest-FCC72B?style=flat&logo=vitest&logoColor=white)
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
-![Playwright](https://img.shields.io/badge/-Playwright-2EAD33?style=flat&logo=playwright&logoColor=white)
-![Vitest](https://img.shields.io/badge/-Vitest-FCC72B?style=flat&logo=vitest&logoColor=white)
-
-[ 🌿 Acesse o site ](https://heitorovski01.github.io/Agrofloresta/)
+  <br/>
+  
+  <a href="https://heitorovski01.github.io/Agrofloresta/"><strong>🌿 Acesse o site</strong></a>
+</div>
 
 ## Sobre o Projeto 🌿
 A AgroFloresta na Escola é um projeto de extensão universitária da UnB (Universidade de Brasília) em parceria com o CEL (Centro educacional do lago) que leva o conhecimento agroflorestal para o ambiente escolar. Unindo a sabedoria ancestral do Cerrado com práticas científicas, promovemos a regeneração ambiental e a segurança alimentar. O projeto é cultivado de forma colaborativa por professores, estudantes e pela comunidade, fortalecendo o vínculo com a natureza e os saberes locais.
@@ -28,7 +33,7 @@ agrofloresta/
 │   ├── img/          # Imagens (mascote, equipe, reels)
 │   └── js/           # Scripts globais (menu mobile, etc.)
 ├── jogos/
-│   └── jogo1/        # Minigame "Semeador"
+│   └── jogo1/        # Minigame "Colheita Agroflorestal"
 │       ├── assets/   # Sprites, sons e scripts do jogo
 │       └── index.html
 ├── tests/            
@@ -67,11 +72,11 @@ npm run test:all
 - **Playwright & Axe-Core:** Testes de ponta a ponta (E2E) simulando interações reais em múltiplos navegadores e escaneando problemas de acessibilidade na interface.
 
 ## Jogos 🎮
-| Nome | Status | Pasta |
-| :--- | :--- | :--- |
-| Semeador | ✅ Concluído | `jogos/jogo1/` |
+| Nome | Status | Pasta | Jogue |
+| :--- | :--- | :--- | :--- |
+| Colheita Agroflorestal (Semeador) | ✅ Concluído | `jogos/jogo1/` | [🎮 Jogar](https://heitorovski01.github.io/Agrofloresta/jogos/jogo1/index.html) |
 
-*O minigame "Semeador" permite controlar uma minhoca que coleta sementes nativas do Cerrado, contando com ranking local de pontuação!*
+*O minigame permite controlar uma minhoca que coleta sementes nativas do Cerrado e prepara o solo, contando com ranking local de pontuação!*
 
 ## Equipe 👥
 Projeto desenvolvido por estudantes, professores e comunidade em parceria com UnB e CEL.
